@@ -409,12 +409,7 @@ function shareResult() {
     var crashes = gameState.crashes;
     var finalPrice = getEl('res-final-price').textContent;
     var startPrice = getEl('res-start-price').textContent;
-    var message = '🚗 ОСАГО: Умный водитель
-🏆 Ранг: ' + rank + '
-💥 Аварий: ' + crashes + '
-💰 Полис: ' + finalPrice + ' (было ' + startPrice + ')
-
-Сможешь лучше? 👇';
+    var message = '🚗 ОСАГО: Умный водитель\n🏆 Ранг: ' + rank + '\n💥 Аварий: ' + crashes + '\n💰 Полис: ' + finalPrice + ' (было ' + startPrice + ')\n\nСможешь лучше? 👇';
 
     if (isVK && vkBridgeReady && vkBridge) {
         vkBridge.send('VKWebAppShowWallPostBox', { message: message })
