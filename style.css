@@ -1,0 +1,157 @@
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root { 
+    --neon-cyan: #00f0ff; 
+    --neon-pink: #ff00aa; 
+    --neon-green: #00ff88; 
+    --neon-yellow: #ffee00; 
+    --neon-purple: #aa00ff;
+    --dark-bg: #0a0a12; 
+    --panel-bg: #12121f; 
+    --road-gray: #2a2a35; 
+    --roadside-green: #1a3a1a; 
+    --text-light: #e0e0e0; 
+    --text-dim: #8888a0; 
+    --danger-red: #ff3333; 
+    --warning-orange: #ff8800;
+}
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark-bg); color: var(--text-light); touch-action: none; user-select: none; }
+
+/* Экраны */
+.screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 1; }
+.screen.active { display: flex; }
+
+/* Загрузка */
+#screen-loading { background: var(--dark-bg); z-index: 999; }
+.loading-container { text-align: center; }
+.loading-car { font-size: 4rem; animation: carBounce 1s ease infinite; margin-bottom: 20px; }
+@keyframes carBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+.loading-container h2 { font-size: 1.5rem; margin-bottom: 30px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 0 auto 15px; overflow: hidden; }
+.loading-progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); border-radius: 2px; animation: loadProgress 2s ease forwards; }
+@keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+.loading-text { color: var(--text-dim); font-size: 0.9rem; }
+
+/* Форма */
+.form-container { width: 100%; max-width: 420px; background: var(--panel-bg); border-radius: 24px; padding: 28px 24px; border: 1px solid rgba(0, 240, 255, 0.15); }
+.form-container h1 { font-size: 1.6rem; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.subtitle { text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
+
+.stats-bar { display: flex; justify-content: space-between; padding: 10px 14px; background: rgba(0, 240, 255, 0.05); border-radius: 12px; margin-bottom: 16px; font-size: 0.75rem; color: var(--text-dim); }
+.stats-bar span { color: var(--neon-cyan); font-weight: 600; }
+
+.input-group { margin-bottom: 18px; }
+.input-group label { display: block; font-size: 0.85rem; color: var(--neon-cyan); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; }
+.input-group select { width: 100%; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(0, 240, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: var(--text-light); font-size: 1rem; outline: none; appearance: none; cursor: pointer; }
+.input-group select:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+
+.price-preview { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 16px; margin-bottom: 20px; }
+#preview-price { font-size: 1.4rem; font-weight: 700; color: var(--neon-green); }
+
+.btn-cyber { width: 100%; padding: 18px 24px; border: none; border-radius: 20px; background: linear-gradient(135deg, var(--neon-cyan), #0088ff); color: #000; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.btn-cyber:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3); }
+.btn-cyber:active { transform: translateY(0); }
+.btn-secondary { background: linear-gradient(135deg, var(--neon-purple), #6600cc) !important; color: #fff !important; margin-top: 10px; }
+.btn-share { margin-bottom: 12px; background: linear-gradient(135deg, var(--neon-pink), #cc0088) !important; }
+
+.form-actions { display: flex; gap: 10px; margin-top: 16px; }
+.btn-small { flex: 1; padding: 12px 16px; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 14px; background: rgba(0, 240, 255, 0.05); color: var(--neon-cyan); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-small:hover { background: rgba(0, 240, 255, 0.15); }
+
+/* Игра */
+#screen-game { padding: 0; justify-content: flex-start; }
+.dashboard { width: 100%; display: flex; justify-content: space-around; padding: 12px 8px; background: var(--panel-bg); border-bottom: 1px solid rgba(0, 240, 255, 0.15); }
+.dash-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dash-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; }
+.dash-value { font-size: 1.1rem; font-weight: 700; color: var(--neon-cyan); transition: all 0.3s; }
+.dash-value.danger { color: var(--danger-red); animation: pulseRed 1s ease infinite; }
+.dash-value.warning { color: var(--warning-orange); }
+@keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+#game-area { position: relative; width: 100%; flex: 1; overflow: hidden; background: var(--dark-bg); }
+.roadside { position: absolute; top: 0; width: 12.5%; height: 100%; background: var(--roadside-green); }
+.roadside.left { left: 0; }
+.roadside.right { right: 0; }
+#road { position: absolute; left: 12.5%; top: 0; width: 75%; height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; }
+.lane { position: relative; height: 100%; border-right: 3px solid #000; }
+.lane:last-child { border-right: none; }
+.lane::after { content: ''; position: absolute; right: 0; top: 0; width: 3px; height: 100%; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) 20px, transparent 20px, transparent 40px); animation: roadMove 0.5s linear infinite; }
+.lane:last-child::after { right: auto; left: 0; }
+@keyframes roadMove { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
+
+#player-car { position: absolute; bottom: 60px; width: 80px; height: 48px; z-index: 10; filter: drop-shadow(0 6px 20px rgba(0, 240, 255, 0.5)); transition: all 0.3s ease-out; }
+#player-car svg { width: 100%; height: 100%; display: block; }
+.touch-zone { position: absolute; top: 0; width: 50%; height: 100%; z-index: 8; cursor: pointer; }
+#touch-left { left: 0; }
+#touch-right { right: 0; }
+#controls-hint { width: 100%; display: flex; justify-content: space-between; padding: 10px 20px; background: var(--panel-bg); border-top: 1px solid rgba(0, 240, 255, 0.1); font-size: 0.75rem; color: var(--text-dim); }
+
+.obstacle { position: absolute; font-size: 2rem; z-index: 5; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); animation: obstacleAppear 0.3s ease; }
+@keyframes obstacleAppear { 0% { transform: translateX(-50%) scale(0); } 100% { transform: translateX(-50%) scale(1); } }
+
+/* Пауза */
+.pause-container { width: 100%; max-width: 320px; background: var(--panel-bg); border-radius: 24px; padding: 40px 30px; text-align: center; border: 1px solid rgba(0, 240, 255, 0.2); }
+.pause-container h2 { font-size: 2rem; margin-bottom: 10px; color: var(--neon-yellow); }
+.pause-container p { color: var(--text-dim); margin-bottom: 30px; }
+
+/* Второй шанс */
+.second-chance-container { width: 100%; max-width: 340px; background: var(--panel-bg); border-radius: 24px; padding: 40px 30px; text-align: center; border: 2px solid var(--neon-yellow); }
+.second-chance-icon { font-size: 4rem; margin-bottom: 15px; animation: pulse 1.5s ease infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.second-chance-container h2 { font-size: 1.8rem; margin-bottom: 10px; color: var(--neon-yellow); }
+.second-chance-container p { color: var(--text-dim); margin-bottom: 30px; line-height: 1.5; }
+
+/* Результат */
+#screen-result { padding: 20px; }
+.result-container { width: 100%; max-width: 420px; text-align: center; }
+.result-container h2 { font-size: 1.8rem; margin-bottom: 20px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.result-card { background: var(--panel-bg); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+.result-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.95rem; }
+.result-item:last-child { border-bottom: none; }
+.result-item.highlight { background: rgba(0, 255, 136, 0.06); margin: 8px -12px; padding: 14px 12px; border-radius: 12px; font-weight: 700; }
+.result-message { color: var(--text-dim); margin-bottom: 24px; line-height: 1.5; }
+
+/* Оверлей аварии */
+#crash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; z-index: 100; animation: crashFlash 0.3s ease; }
+#crash-overlay.hidden { display: none; }
+@keyframes crashFlash { 0% { background: rgba(255, 0, 0, 0.5); } 100% { background: rgba(255, 0, 0, 0.2); } }
+.crash-popup { background: var(--panel-bg); border: 2px solid var(--danger-red); border-radius: 24px; padding: 32px 40px; text-align: center; animation: crashPopup 0.4s ease; }
+@keyframes crashPopup { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.crash-icon { font-size: 4rem; display: block; margin-bottom: 12px; animation: shake 0.5s ease; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+.crash-text { color: var(--text-dim); font-size: 0.9rem; margin-top: 8px; }
+
+/* Баннер рекламы */
+.ad-banner { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: var(--panel-bg); border-top: 1px solid rgba(0, 240, 255, 0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 0.8rem; z-index: 50; }
+.ad-banner.hidden { display: none; }
+
+/* Анимации */
+.price-bump { animation: priceBump 0.4s ease; }
+@keyframes priceBump { 0% { transform: scale(1); } 30% { transform: scale(1.3); color: var(--danger-red); } 100% { transform: scale(1); } }
+
+/* Адаптивность */
+@media (max-height: 700px) { 
+    #player-car { width: 60px; height: 36px; bottom: 50px; } 
+    .obstacle { font-size: 1.6rem; } 
+    .form-container { padding: 20px 18px; }
+    .form-container h1 { font-size: 1.3rem; }
+}
+
+@media (max-height: 600px) {
+    .dashboard { padding: 8px 6px; }
+    .dash-value { font-size: 0.9rem; }
+    #controls-hint { padding: 6px 15px; font-size: 0.65rem; }
+}
+
+@media (max-width: 360px) {
+    .form-container { padding: 18px 15px; }
+    .btn-cyber { padding: 14px 20px; font-size: 1rem; }
+    .stats-bar { flex-direction: column; gap: 5px; }
+}
+
+/* Горизонтальная ориентация */
+@media (orientation: landscape) and (max-height: 500px) {
+    #screen-game { flex-direction: row; }
+    .dashboard { width: 120px; height: 100%; flex-direction: column; justify-content: center; border-bottom: none; border-right: 1px solid rgba(0, 240, 255, 0.15); }
+    #game-area { flex: 1; }
+    #controls-hint { display: none; }
+}
