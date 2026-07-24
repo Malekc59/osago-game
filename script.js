@@ -41,15 +41,26 @@ var gameState = {
     totalCrashes: 0
 };
 
-// VK Bridge — исправлено: используем правильный глобальный объект bridge
+// VK Bridge — исправлено: поддержка и нативного bridge, и CDN
 var vkBridge = null;
 var isVK = false;
 var vkBridgeReady = false;
 
 function initVK() {
-    if (typeof window !== 'undefined' && window.bridge) {
+    // Пробуем нативный VK Bridge (встроен в ВК Mini Apps)
+    if (typeof window !== 'undefined' && window.vkBridge) {
+        vkBridge = window.vkBridge;
+        isVK = true;
+        console.log('VK Bridge найден (window.vkBridge)');
+    }
+    // Пробуем CDN-версию
+    else if (typeof window !== 'undefined' && window.bridge) {
         vkBridge = window.bridge;
         isVK = true;
+        console.log('VK Bridge найден (window.bridge)');
+    }
+
+    if (vkBridge && isVK) {
         vkBridge.send('VKWebAppInit', {})
             .then(function(data) { 
                 vkBridgeReady = true;
@@ -67,6 +78,7 @@ function initVK() {
             .catch(function(err) { 
                 console.log('VK Bridge ошибка:', err);
                 isVK = false;
+                vkBridge = null;
             });
     } else {
         console.log('VK Bridge не найден — режим веб-версии');
@@ -665,15 +677,40 @@ touchZones.right.addEventListener('click', function(e) {
     movePlayer('right');
 });
 
-// Убираем экран загрузки через 2 секунды
-setTimeout(function() {
-    var loadingScreen = getEl('screen-loading');
-    if (loadingScreen) loadingScreen.classList.remove('active');
-    showScreen('form');
-    updatePreviewPrice();
-    updateStatsDisplay();
-}, 2000);
+// Надёжная инициализация приложения
+function bootstrapApp() {
+    try {
+        loadProgress();
+        updateStatsDisplay();
 
-// Инициализация
-loadProgress();
-initVK();
+        // Пробуем инициализировать VK Bridge
+        initVK();
+
+        // Убираем экран загрузки
+        var loadingScreen = getEl('screen-loading');
+        if (loadingScreen) loadingScreen.classList.remove('active');
+
+        // Показываем форму
+        showScreen('form');
+        updatePreviewPrice();
+        updateStatsDisplay();
+
+        console.log('Приложение инициализировано успешно');
+    } catch (e) {
+        console.error('Ошибка инициализации:', e);
+        // Даже при ошибке показываем форму
+        var loadingScreen = getEl('screen-loading');
+        if (loadingScreen) loadingScreen.classList.remove('active');
+        showScreen('form');
+        updatePreviewPrice();
+    }
+}
+
+// Запускаем с небольшой задержкой для гарантии загрузки DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(bootstrapApp, 100);
+    });
+} else {
+    setTimeout(bootstrapApp, 100);
+}

@@ -5,12 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ОСАГО: Умный водитель</title>
     <link rel="stylesheet" href="style.css">
-    <!-- VK Bridge — подключаем правильно -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <!-- VK Bridge — CDN fallback для веб-версии -->
     <script>
-        if (typeof window !== 'undefined' && window.bridge) {
-            window.bridge.send('VKWebAppInit', {}).catch(function(){});
-        }
+        // VK Bridge inline для VK Mini Apps
+        (function() {
+            if (typeof window !== 'undefined' && !window.bridge) {
+                var vkBridge = {
+                    subscribers: [],
+                    send: function(method, params) {
+                        return new Promise(function(resolve, reject) {
+                            if (window.parent !== window) {
+                                var reqId = Date.now() + '_' + Math.random();
+                                var handler = function(e) {
+                                    if (e.data && e.data.request_id === reqId) {
+                                        window.removeEventListener('message', handler);
+                                        if (e.data.error) reject(e.data.error);
+                                        else resolve(e.data);
+                                    }
+                                };
+                                window.addEventListener('message', handler);
+                                window.parent.postMessage({
+                                    type: 'vk-connect',
+                                    method: method,
+                                    params: params || {},
+                                    request_id: reqId
+                                }, '*');
+                                setTimeout(function() {
+                                    window.removeEventListener('message', handler);
+                                    reject(new Error('VK Bridge timeout'));
+                                }, 5000);
+                            } else {
+                                reject(new Error('VK Bridge not available'));
+                            }
+                        });
+                    },
+                    subscribe: function(fn) {
+                        vkBridge.subscribers.push(fn);
+                        window.addEventListener('message', function(e) {
+                            if (e.data && e.data.type && e.data.type.startsWith('VKWebApp')) {
+                                fn({ detail: e.data });
+                            }
+                        });
+                    }
+                };
+                window.bridge = vkBridge;
+            }
+        })();
     </script>
     <!-- Yandex.Metrika для аналитики -->
     <script type="text/javascript">
