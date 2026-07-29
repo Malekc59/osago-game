@@ -47,49 +47,31 @@ var isVK = false;
 var vkBridgeReady = false;
 
 function initVK() {
-    // Официальная инициализация VK Bridge по документации dev.vk.com/bridge/getting-started
+    // VK Bridge инициализируется в index.html через официальную библиотеку
+    // Здесь только проверяем готовность и подписываемся на события
     if (typeof window !== 'undefined' && window.vkBridge) {
         vkBridge = window.vkBridge;
         isVK = true;
-        console.log('VK Bridge найден (window.vkBridge)');
+        vkBridgeReady = true;
+        console.log('VK Bridge подключен (window.vkBridge)');
 
-        vkBridge.send('VKWebAppInit')
-            .then(function(data) { 
-                vkBridgeReady = true;
-                console.log('VK Bridge инициализирован:', data);
+        // Подписка на события ВК
+        vkBridge.subscribe(function(e) {
+            var eventType = e.detail ? e.detail.type : (e.type || '');
+            if (eventType === 'VKWebAppViewHide') {
+                pauseGame();
+            }
+            if (eventType === 'VKWebAppViewRestore') {
+                resumeGame();
+            }
+        });
 
-                // Подписка на события ВК
-                vkBridge.subscribe(function(e) {
-                    var eventType = e.detail ? e.detail.type : (e.type || '');
-                    if (eventType === 'VKWebAppViewHide') {
-                        pauseGame();
-                    }
-                    if (eventType === 'VKWebAppViewRestore') {
-                        resumeGame();
-                    }
-                });
-
-                loadAds();
-            })
-            .catch(function(err) { 
-                console.log('VK Bridge ошибка:', err);
-                vkBridgeReady = false;
-            });
+        loadAds();
     } else if (typeof window !== 'undefined' && window.bridge) {
-        // Fallback для совместимости
         vkBridge = window.bridge;
         isVK = true;
-        console.log('VK Bridge найден (window.bridge)');
-
-        vkBridge.send('VKWebAppInit')
-            .then(function(data) {
-                vkBridgeReady = true;
-                console.log('VK Bridge (legacy) инициализирован:', data);
-            })
-            .catch(function(err) {
-                console.log('VK Bridge (legacy) ошибка:', err);
-                vkBridgeReady = false;
-            });
+        vkBridgeReady = true;
+        console.log('VK Bridge подключен (window.bridge)');
     } else {
         console.log('VK Bridge не найден — режим веб-версии');
         isVK = false;
@@ -230,7 +212,6 @@ var displays = {
 var buttons = {
     start: getEl('btn-start'),
     restart: getEl('btn-restart'),
-    share: getEl('btn-share'),
     leaderboard: getEl('btn-leaderboard'),
     leaderboardResult: getEl('btn-leaderboard-result'),
     invite: getEl('btn-invite'),
@@ -606,10 +587,6 @@ buttons.restart.addEventListener('click', function() {
     updatePreviewPrice();
     updateStatsDisplay();
 });
-
-if (buttons.share) {
-    buttons.share.addEventListener('click', shareResult);
-}
 
 if (buttons.leaderboard) {
     buttons.leaderboard.addEventListener('click', showLeaderboard);
