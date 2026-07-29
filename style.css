@@ -128,6 +128,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .price-bump { animation: priceBump 0.4s ease; }
 @keyframes priceBump { 0% { transform: scale(1); } 30% { transform: scale(1.3); color: var(--danger-red); } 100% { transform: scale(1); } }
 
+/* Toast уведомления */
+@keyframes toastIn { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+
+/* Popup уведомления */
+@keyframes popupIn { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.8); } 100% { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+@keyframes popupOut { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(0.8); } }
+
 /* Адаптивность */
 @media (max-height: 700px) { 
     #player-car { width: 60px; height: 36px; bottom: 50px; } 
