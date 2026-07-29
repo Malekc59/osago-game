@@ -79,33 +79,58 @@ function initVK() {
     }
 }
 
-// Реклама
+// Кастомные уведомления (замена alert)
+function showNotification(message) {
+    var notif = document.createElement('div');
+    notif.textContent = message;
+    notif.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel-bg);color:var(--text-light);padding:20px 30px;border-radius:20px;border:1px solid var(--neon-cyan);font-size:1rem;text-align:center;z-index:9999;animation:popupIn 0.3s ease;max-width:80%;';
+    document.body.appendChild(notif);
+    setTimeout(function() {
+        notif.style.animation = 'popupOut 0.3s ease';
+        setTimeout(function() { notif.remove(); }, 300);
+    }, 2000);
+}
+
+// Реклама (отключена до прохождения модерации и настройки кабинета выплат)
 var adsLoaded = false;
 function loadAds() {
+    // Реклама отключена до настройки кабинета выплат
+    // После регистрации в cashout.vk.com раскомментировать
+    /*
     if (!isVK || !vkBridgeReady) return;
     vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' })
         .then(function() { adsLoaded = true; console.log('Реклама загружена'); })
         .catch(function() { adsLoaded = false; });
+    */
 }
 
 function showBannerAd() {
+    // Баннерная реклама отключена до настройки кабинета выплат
+    /*
     if (!isVK || !vkBridgeReady) return;
     vkBridge.send('VKWebAppShowBannerAd', { 
         banner_location: 'bottom',
         can_close: true 
     }).catch(function() {});
+    */
 }
 
 function showInterstitialAd() {
+    // Межстраничная реклама отключена до настройки кабинета выплат
+    /*
     if (!isVK || !vkBridgeReady) return;
     vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
         .then(function(data) { 
             if (data.result) console.log('Межстраничная реклама показана');
         })
         .catch(function(err) { console.log('Реклама недоступна:', err); });
+    */
 }
 
 function showRewardedAd(callback) {
+    // Rewarded video отключено до настройки кабинета выплат
+    if (callback) callback(false);
+    /*
     if (!isVK || !vkBridgeReady) {
         if (callback) callback(false);
         return;
@@ -120,12 +145,13 @@ function showRewardedAd(callback) {
             }
         })
         .catch(function() { if (callback) callback(false); });
+    */
 }
 
 // Лидерборд
 function showLeaderboard() {
     if (!isVK || !vkBridgeReady) {
-        alert('Лидерборд доступен только в ВКонтакте');
+        showNotification('🏆 Лидерборд доступен только в ВКонтакте');
         return;
     }
     vkBridge.send('VKWebAppShowLeaderBoardBox', { user_result: gameState.bestScore })
@@ -135,7 +161,7 @@ function showLeaderboard() {
 // Приглашение друзей
 function inviteFriends() {
     if (!isVK || !vkBridgeReady) {
-        alert('Приглашение друзей доступно только в ВКонтакте');
+        showNotification('👥 Приглашение друзей доступно только в ВКонтакте');
         return;
     }
     vkBridge.send('VKWebAppInvite', {})
@@ -425,9 +451,22 @@ function shareResult() {
 }
 
 function fallbackShare(text) {
+    var showToast = function(message) {
+        var toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 24px;border-radius:20px;font-size:0.9rem;z-index:9999;animation:toastIn 0.3s ease;';
+        document.body.appendChild(toast);
+        setTimeout(function() {
+            toast.style.animation = 'toastOut 0.3s ease';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 2500);
+    };
+
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(function() {
-            alert('📋 Результат скопирован! Вставь в ВК или Telegram');
+            showToast('📋 Результат скопирован!');
+        }).catch(function() {
+            showToast('❌ Не удалось скопировать');
         });
     } else {
         var textarea = document.createElement('textarea');
@@ -436,7 +475,7 @@ function fallbackShare(text) {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        alert('📋 Результат скопирован!');
+        showToast('📋 Результат скопирован!');
     }
 }
 
