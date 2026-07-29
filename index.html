@@ -6,7 +6,7 @@
     <title>ОСАГО: Умный водитель</title>
     <link rel="stylesheet" href="style.css">
         <!-- VK Bridge — официальная библиотека -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge@2.15.0/dist/browser.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge@2.15.0/dist/browser.min.js" crossorigin="anonymous" onerror="console.log('VK Bridge CDN недоступен, используем fallback')"></script>
     <script>
         // Инициализация VK Bridge согласно документации dev.vk.com/bridge/getting-started
         if (typeof window !== 'undefined' && window.vkBridge) {
@@ -28,7 +28,8 @@
         }
     </script>
 
-<!-- Yandex.Metrika для аналитики -->
+<!-- Yandex.Metrika — раскомментируйте после получения реального ID на metrika.yandex.ru -->
+    <!--<!-- Yandex.Metrika для аналитики -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
         m[i].l=1*new Date();
@@ -37,6 +38,7 @@
         (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
         ym(99999999, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
     </script>
+    -->
 </head>
 <body>
 
@@ -232,7 +234,6 @@
 
             <p id="res-message" class="result-message"></p>
 
-            <button id="btn-share" class="btn-cyber btn-share">📤 ПОДЕЛИТЬСЯ</button>
             <button id="btn-leaderboard-result" class="btn-cyber btn-secondary">🏆 ЛИДЕРБОРД</button>
             <button id="btn-restart" class="btn-cyber">🔄 ИГРАТЬ СНОВА</button>
         </div>
