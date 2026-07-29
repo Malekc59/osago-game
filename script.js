@@ -374,9 +374,10 @@ function handleCrash() {
 
     showCrashOverlay();
 
-    if (gameState.crashes === 3 || gameState.crashes === 5 || gameState.crashes === 8) {
-        setTimeout(function() { offerSecondChance(); }, 1600);
-    }
+    // Второй шанс отключён до настройки кабинета выплат
+    // if (gameState.crashes === 3 || gameState.crashes === 5 || gameState.crashes === 8) {
+    //     setTimeout(function() { offerSecondChance(); }, 1600);
+    // }
 }
 
 function showCrashOverlay() {
@@ -659,14 +660,6 @@ if (buttons.quit) {
         showScreen('form');
         updateStatsDisplay();
     });
-}
-
-if (buttons.secondChance) {
-    buttons.secondChance.addEventListener('click', useSecondChance);
-}
-
-if (buttons.skipSecondChance) {
-    buttons.skipSecondChance.addEventListener('click', skipSecondChance);
 }
 
 document.addEventListener('keydown', function(e) {
