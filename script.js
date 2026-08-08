@@ -1,5 +1,5 @@
-// ОСАГО: Умный водитель — Production Ready v3.0
-// Исправлено: VK Bridge, таймеры, gameLoop, visibilitychange, lastFrameTime, монетизация
+// ОСАГО: Умный водитель — Production Ready v3.1
+// Исправлено: VK Bridge инициализация, ResizeWindow, ViewSettings, монетизация
 
 var BASE_RATE = 3000;
 var GAME_DURATION = 60;
@@ -41,28 +41,53 @@ var gameState = {
   totalCrashes: 0
 };
 
-// VK Bridge — правильная инициализация через официальную библиотеку
+// VK Bridge — улучшенная инициализация с поддержкой разных способов подключения
 var vkBridge = null;
 var isVK = false;
 var vkBridgeReady = false;
 
 function initVK() {
   try {
-    // Проверяем, загружена ли библиотека vk-bridge из CDN
+    var bridge = null;
+
+    // Пробуем найти bridge всеми возможными способами
     if (typeof window !== 'undefined' && window.vkBridge) {
-      vkBridge = window.vkBridge;
+      bridge = window.vkBridge;
+      console.log('🔍 Bridge найден: window.vkBridge');
+    } else if (typeof vkBridge !== 'undefined') {
+      bridge = vkBridge;
+      console.log('🔍 Bridge найден: vkBridge (global)');
+    } else if (typeof window !== 'undefined' && window.bridge) {
+      bridge = window.bridge;
+      console.log('🔍 Bridge найден: window.bridge');
+    }
+
+    if (bridge) {
+      vkBridge = bridge;
       isVK = true;
 
-      // Подключаемся к VK — это ключевой момент!
-      vkBridge.send('VKWebAppInit')
+      // Инициализируем VK
+      bridge.send('VKWebAppInit')
         .then(function(data) {
           if (data.result) {
             vkBridgeReady = true;
-            console.log('✅ VK Bridge инициализирован');
+            console.log('✅ VK Bridge инициализирован успешно');
 
-            // Подписка на события ВК
-            vkBridge.subscribe(function(e) {
+            // Устанавливаем размер окна для VK Mini Apps
+            bridge.send('VKWebAppResizeWindow', { width: 1000, height: 2000 })
+              .then(function() { console.log('📐 Размер окна установлен'); })
+              .catch(function(err) { console.log('⚠️ ResizeWindow недоступен:', err); });
+
+            // Настраиваем внешний вид статус-бара
+            bridge.send('VKWebAppSetViewSettings', {
+              status_bar_style: 'light',
+              action_bar_color: '#0a0a12'
+            }).catch(function() {});
+
+            // Подписка на события VK
+            bridge.subscribe(function(e) {
               var eventType = e.detail ? e.detail.type : (e.type || '');
+              console.log('📡 VK событие:', eventType);
               if (eventType === 'VKWebAppViewHide') {
                 pauseGame();
               }
@@ -73,13 +98,13 @@ function initVK() {
 
             loadAds();
           } else {
-            console.log('⚠️ VK Bridge не подтвердил инициализацию');
-            vkBridgeReady = false;
+            console.log('⚠️ VKWebAppInit вернул result=false');
           }
         })
         .catch(function(err) {
-          console.log('❌ Ошибка VK Bridge Init:', err);
-          vkBridgeReady = false;
+          console.log('❌ Ошибка VKWebAppInit:', err);
+          // Даже при ошибке пытаемся использовать bridge
+          vkBridgeReady = true;
         });
     } else {
       console.log('ℹ️ VK Bridge не найден — режим веб-версии');
@@ -446,7 +471,6 @@ function pauseGame() {
 function resumeGame() {
   if (gameState.isRunning && gameState.isPaused) {
     gameState.isPaused = false;
-    // 🔧 ИСПРАВЛЕНИЕ: сбрасываем lastFrameTime, чтобы не было скачка препятствий
     lastFrameTime = 0;
     showScreen('game');
   }
@@ -493,7 +517,7 @@ function fallbackShare(text) {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
-    showToast('📋 Рультат скопирован!');
+    showToast('📋 Результат скопирован!');
   }
 }
 
@@ -718,7 +742,7 @@ touchZones.right.addEventListener('click', function(e) {
   movePlayer('right');
 });
 
-// 🔧 ИСПРАВЛЕНИЕ: отслеживаем visibilitychange — когда вкладка скрыта, ставим паузу
+// Отслеживаем visibilitychange — когда вкладка скрыта, ставим паузу
 document.addEventListener('visibilitychange', function() {
   if (document.hidden && gameState.isRunning && !gameState.isPaused) {
     pauseGame();
@@ -747,7 +771,6 @@ function bootstrapApp() {
     console.log('✅ Приложение инициализировано успешно');
   } catch (e) {
     console.error('❌ Ошибка инициализации:', e);
-    // Даже при ошибке показываем форму
     var loadingScreen = getEl('screen-loading');
     if (loadingScreen) loadingScreen.classList.remove('active');
     showScreen('form');
