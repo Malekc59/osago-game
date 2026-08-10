@@ -115,12 +115,14 @@ function createRoad() {
 
   game.trackLength = segments.length * SEGMENT_LENGTH;
 
-  // Препятствия — 80 штук, по центру 3 полос
+  // Препятствия — 20 штук с минимальным расстоянием 30 сегментов (~6000 единиц)
   var laneOffsets = [-0.55, 0, 0.55]; // левая, центр, правая полоса
   var carTypes = ['sedan', 'taxi', 'police', 'truck', 'deer'];
-  for (n = 0; n < 80; n++) {
-    var idx = randomInt(120, segments.length - 250);
-    // Не ставим 2 препятствия на один сегмент
+  var lastObstacleIdx = 120;
+  for (n = 0; n < 20; n++) {
+    // Минимум 30 сегментов от предыдущего препятствия
+    var idx = randomInt(lastObstacleIdx + 30, segments.length - 300);
+    if (idx >= segments.length - 100) break;
     if (segments[idx].sprites.length > 0) continue;
     segments[idx].sprites.push({
       type: randomChoice(carTypes),
@@ -128,6 +130,7 @@ function createRoad() {
       width: 0.5,
       color: randomChoice(['#cc2222', '#eeeeee', '#2222cc', '#ccaa22', '#888888'])
     });
+    lastObstacleIdx = idx;
   }
 }
 
@@ -231,22 +234,28 @@ function drawPoly(x1, y1, x2, y2, x3, y3, x4, y4, color) {
 }
 
 function renderSprite(segment, sprite, scale) {
-  var spriteScale = scale * (W / 600);
-  var sw = Math.max(30, 180 * spriteScale);  // ширина машинки
-  var sh = Math.max(40, 220 * spriteScale);  // высота машинки
+  // scale приходит из project() — чем ближе к камере, тем больше scale
+  // Для сегмента прямо перед игроком scale ≈ 1.0, вдали ≈ 0.01
+  var spriteScale = scale * (W / 400);
 
+  // Базовый размер машинки в "мире" — 500x600 единиц
+  var baseW = 500;
+  var baseH = 600;
+  var sw = baseW * spriteScale;
+  var sh = baseH * spriteScale;
+
+  // Позиция на экране
   var sx = segment.p1.screen.x + (sprite.offset * segment.p1.screen.w) - sw / 2;
-  var sy = segment.p1.screen.y - sh * 0.85;
+  var sy = segment.p1.screen.y - sh * 0.9;
 
+  // Не рисуем за пределами экрана
   if (sx < -sw || sx > W + sw || sy < -sh || sy > H + sh) return;
 
   var cx = sx + sw / 2;
   var cy = sy + sh;
-  var w = sw;
-  var h = sh;
 
-  // Рисуем машинку спереди (вид с фарами)
-  drawCarFront(cx, cy, w, h, sprite.type, sprite.color);
+  // Рисуем машинку спереди
+  drawCarFront(cx, cy, sw, sh, sprite.type, sprite.color);
 }
 
 function drawCarFront(cx, cy, w, h, type, color) {
@@ -254,12 +263,6 @@ function drawCarFront(cx, cy, w, h, type, color) {
   var bh = h * 0.75; // высота кузова
   var bx = cx - bw / 2;
   var by = cy - bh;
-
-  // Тень
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 5, bw * 0.5, h * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
 
   if (type === 'truck') {
     // Грузовик — высокий и узкий
