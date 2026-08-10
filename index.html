@@ -3,184 +3,303 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="description" content="ОСАГО: Умный водитель — аркада про вождение с расчётом полиса">
+<meta name="description" content="Умный водитель с ОСАГО — 3D-аркада про вождение. Снизь КБМ до минимума за 10 заездов!">
 <meta name="theme-color" content="#0a0a12">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-512.png">
-<title>ОСАГО: Умный водитель</title>
-<!-- VK Bridge — подключаем ДО нашего скрипта -->
-<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4MS3kByK6P1d6VmLWBiMADrCqEKTWhJ0PByKW1oR7r3UfQugf_Hi2Bh4G_HdXkboi7Q4gDJmQf1vfaYunD3FmjTC2wYmC_ODi_Y2T08O9Nrfhn4g5fyVg2JgJoqP4Ic49QvMvXXKHQhJ6DJLtYW1JUglYxssedOf3KT46S1CIm9k2clBvscyAIWEaAxMzqVXhwCG52qlv6R3GlqHP5YGLOaosMVVWPlb1oOZI3Da17iu0OWfaBcIYku0r0XAngB2RtvtFS34_ryjGvppho5dYBjRuo4uFLYWTymJZKAO9kMkEUBMt1v-V7R02ekCVZ_WISGs-WUjfhZ-B21uEn9hb39jYzEIv-WGEJAMYn8MAtc9UXQrLUYQvS8dbf_yORQH038rgM5uBL--qdBBACxxuI9q8DufaqyrFlsVuOxseCGuPHsC-1CIddZNrKjQuZbGqzqc3Kb3GfkEeRNSHj7n36dKyehIOMRcuN6B4x891eqF5tfH4_I1RdBFYay25iQn6QnHLGoRQYg5XQEbOPABj8s8_dqJdC0Oa69zzjToTSucMFTL0vdYDPCwJr_xCzmLNRfPHP-kN7O3wBVjunVyPe4GLIbzMllwY37gtGASucKbv-bFcHCYNsO81ucEfZ91rNmm2D5Pl-XpRs2HL9Bk8Q" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9wcm9kLWNoYXQta2ltaS50b3MtY24tYmVpamluZy52b2xjZXMuY29tL2tpbWktZnMvb2tjL2gzYWp5cXA3Y2phZGcvb3V0cHV0L2luZGV4Lmh0bWw_WC1Ub3MtQWxnb3JpdGhtPVRPUzQtSE1BQy1TSEEyNTYmWC1Ub3MtQ3JlZGVudGlhbD1BS0xUWVRKbE5qZ3dNalkyWkRCa05ERmlZbUk1WVdOaVpEQmxabUZtWWpJelpUQSUyZjIwMjYwODA1JTJmY24tYmVpamluZyUyZnRvcyUyZnJlcXVlc3QmWC1Ub3MtRGF0ZT0yMDI2MDgwNVQxMTA2MjlaJlgtVG9zLUV4cGlyZXM9NTE4NDAwJlgtVG9zLVNpZ25hdHVyZT1jNWMwMDE3YjVjZTM1NzdhZDhmNDIyYjUzMjQ5MDdlMGRhNzAyNjk0Y2NhNDY2OTQ1ZDBiMzQwNjk5YmY2OWVhJlgtVG9zLVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM2IlMjBmaWxlbmFtZSUyYSUzZFVURi04JTI3JTI3aW5kZXguaHRtbA"/><script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-<link rel="stylesheet" href="style.css">
+<title>Умный водитель с ОСАГО</title>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=NqG4RT_WU1klChTn3Xdm04jTimhE-wdYDK6ZJT2TZJLNtoFLB7-8g5eyhMZOIEqRGtIMyfqeAROYVOuxbG7ohpYx0D-fFO72i9DpbQH0VtV0dds3RpBlRg02ZtqTKqe1PJwFU56aPYk71M9LVrAVhmFaWvVcK2VNodrdYG2xEVbYj74NQovAxVT_FHewPeUKSeN4QJhxLSML7ieMlayLkLaXhBKDHCA8Krn1aS2m17Sw-UYf2pbbZpUi4RcQSqLTb1tY1HD_RvqWw3J7KMLvymkYdJQixIh9pHgSEy9qYnhOOrJpOY7WJW6nhircbGv2cOcDA81T29yp6fIhFzxafRBULkDjQnwAykcJJuiWE-5n3_XBZJMuU0mwGLX5Etq47TXqjMxvIHIE3aVGD876J9wyHKfnGE4zhuxygxhKtzflzWuT-ahgsKZG6BsjWSpbkWaHC_zcXiB5qbWNPHYwPqS6JVejubeKMKHI_7815oH71FiPYuvWZpQ_qoFyO-3x2o7KQzulVidP_ld6CvlTe4T_XD3HzthX7XKFteuHpTJ0jR-M3g-LhkVEgDJA-CqlKksjUCQbb5AbIz60fYIAw9Gf8H8bqS6d1_AM7kBxfMcAzKP0_RTqHG2axJw3QD1GONvSqZWtG-c8Pk7zREOvEQ" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9wcm9kLWNoYXQta2ltaS50b3MtY24tYmVpamluZy52b2xjZXMuY29tL2tpbWktZnMvb2tjL2gzYWp5cXA3Y2phZGcvb3V0cHV0L2luZGV4Lmh0bWw_WC1Ub3MtQWxnb3JpdGhtPVRPUzQtSE1BQy1TSEEyNTYmWC1Ub3MtQ3JlZGVudGlhbD1BS0xUWVRKbE5qZ3dNalkyWkRCa05ERmlZbUk1WVdOaVpEQmxabUZtWWpJelpUQSUyZjIwMjYwODA5JTJmY24tYmVpamluZyUyZnRvcyUyZnJlcXVlc3QmWC1Ub3MtRGF0ZT0yMDI2MDgwOVQxOTA0NDhaJlgtVG9zLUV4cGlyZXM9NTE4NDAwJlgtVG9zLVNpZ25hdHVyZT0xMTBkNDZlOWJlZTI4MmUwNmY2Y2U5NWMwMWQ1YjI1ZWQ4MGM2NDY1ZDI2ODY2Y2Y0NjdlNTMyY2FjYWU3MzI1JlgtVG9zLVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM2IlMjBmaWxlbmFtZSUyYSUzZFVURi04JTI3JTI3aW5kZXguaHRtbA"/><script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color:#e0e0e0; font-family:'Segoe UI',system-ui,sans-serif; touch-action:none; user-select:none; }
+.screen { position:fixed; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; z-index:1; }
+.screen.active { display:flex; }
+
+/* Загрузка */
+#screen-loading { background:#0a0a12; z-index:999; }
+.load-box { text-align:center; }
+.load-car { font-size:4rem; margin-bottom:15px; animation:carBounce 1s ease infinite; }
+@keyframes carBounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-15px);} }
+.load-box h2 { font-size:1.5rem; margin-bottom:20px; background:linear-gradient(135deg,#00f0ff,#ff00aa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.load-bar { width:220px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin:0 auto 12px; overflow:hidden; }
+.load-fill { width:0%; height:100%; background:linear-gradient(90deg,#00f0ff,#ff00aa); border-radius:2px; animation:loadFill 2s ease forwards; }
+@keyframes loadFill { to { width:100%; } }
+
+/* Форма */
+.form-box { width:100%; max-width:420px; background:#12121f; border-radius:24px; padding:24px; border:1px solid rgba(0,240,255,0.15); }
+.form-box h1 { font-size:1.4rem; text-align:center; margin-bottom:4px; background:linear-gradient(135deg,#00f0ff,#ff00aa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.form-sub { text-align:center; color:#8888a0; font-size:0.8rem; margin-bottom:14px; }
+.stats-row { display:flex; justify-content:space-between; padding:10px 12px; background:rgba(0,240,255,0.05); border-radius:12px; margin-bottom:14px; font-size:0.7rem; color:#8888a0; }
+.stats-row span { color:#00f0ff; font-weight:600; }
+.input-group { margin-bottom:14px; }
+.input-group label { display:block; font-size:0.75rem; color:#00f0ff; margin-bottom:5px; font-weight:500; text-transform:uppercase; }
+.input-group select { width:100%; padding:11px 13px; border-radius:13px; border:1px solid rgba(0,240,255,0.2); background:rgba(0,0,0,0.3); color:#e0e0e0; font-size:0.9rem; outline:none; appearance:none; cursor:pointer; }
+.input-group select:focus { border-color:#00f0ff; box-shadow:0 0 12px rgba(0,240,255,0.15); }
+.price-box { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); border-radius:13px; margin-bottom:15px; }
+#preview-price { font-size:1.2rem; font-weight:700; color:#00ff88; }
+.btn-cyber { width:100%; padding:15px 18px; border:none; border-radius:17px; background:linear-gradient(135deg,#00f0ff,#0088ff); color:#000; font-size:1rem; font-weight:700; text-transform:uppercase; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; }
+.btn-cyber:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,240,255,0.3); }
+.btn-cyber:active { transform:translateY(0); }
+.btn-sec { background:linear-gradient(135deg,#aa00ff,#6600cc) !important; color:#fff !important; margin-top:8px; }
+.btn-pink { background:linear-gradient(135deg,#ff00aa,#cc0088) !important; color:#fff !important; margin-top:8px; }
+.btn-green { background:linear-gradient(135deg,#00ff88,#008844) !important; color:#000 !important; margin-top:8px; }
+.form-btns { display:flex; gap:7px; margin-top:10px; }
+.btn-sm { flex:1; padding:9px 10px; border:1px solid rgba(0,240,255,0.3); border-radius:11px; background:rgba(0,240,255,0.05); color:#00f0ff; font-size:0.7rem; font-weight:600; cursor:pointer; }
+
+/* Игра */
+#screen-game { padding:0; justify-content:flex-start; background:#0a0a12; }
+#game-canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; }
+.hud { position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; pointer-events:none; }
+.hud-top { position:absolute; top:0; left:0; width:100%; display:flex; justify-content:space-around; padding:10px 5px; background:rgba(10,10,18,0.85); border-bottom:1px solid rgba(0,240,255,0.15); pointer-events:auto; }
+.hud-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.hud-label { font-size:0.55rem; color:#8888a0; text-transform:uppercase; }
+.hud-value { font-size:0.95rem; font-weight:700; color:#00f0ff; }
+.hud-value.danger { color:#ff3333; animation:pulseRed 1s ease infinite; }
+.hud-value.warning { color:#ff8800; }
+@keyframes pulseRed { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+/* Руль */
+#steering-wheel { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:170px; height:170px; z-index:15; pointer-events:none; filter:drop-shadow(0 4px 15px rgba(0,0,0,0.7)); transition:transform 0.15s ease-out; }
+@media (max-height:700px) { #steering-wheel { width:130px; height:130px; bottom:5px; } }
+@media (max-height:600px) { #steering-wheel { width:100px; height:100px; bottom:2px; } }
+
+.touch-zone { position:absolute; top:0; width:50%; height:100%; z-index:12; cursor:pointer; }
+#touch-left { left:0; }
+#touch-right { right:0; }
+
+/* Пауза */
+.pause-box { width:100%; max-width:300px; background:#12121f; border-radius:24px; padding:36px 28px; text-align:center; border:1px solid rgba(0,240,255,0.2); }
+.pause-box h2 { font-size:1.8rem; color:#ffee00; margin-bottom:8px; }
+.pause-box p { color:#8888a0; margin-bottom:24px; font-size:0.9rem; }
+
+/* Результат */
+#screen-result { padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.result-box { width:100%; max-width:420px; text-align:center; padding-bottom:20px; }
+.result-box h2 { font-size:1.5rem; margin-bottom:14px; background:linear-gradient(135deg,#00f0ff,#00ff88); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.result-card { background:#12121f; border:1px solid rgba(0,240,255,0.12); border-radius:17px; padding:16px; margin-bottom:14px; }
+.result-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.88rem; }
+.result-row:last-child { border-bottom:none; }
+.result-row.hl { background:rgba(0,255,136,0.06); margin:5px -8px; padding:11px 8px; border-radius:9px; font-weight:700; }
+.result-msg { color:#8888a0; margin-bottom:18px; line-height:1.5; font-size:0.88rem; }
+
+/* Оверлей аварии */
+#crash-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,0,0,0.25); display:none; align-items:center; justify-content:center; z-index:100; animation:crashFlash 0.4s ease; }
+#crash-overlay.active { display:flex; }
+@keyframes crashFlash { 0%{background:rgba(255,0,0,0.6);} 100%{background:rgba(255,0,0,0.25);} }
+.crash-box { background:#12121f; border:2px solid #ff3333; border-radius:24px; padding:26px 34px; text-align:center; }
+.crash-icon { font-size:3.5rem; display:block; margin-bottom:8px; }
+
+/* Магазин */
+.shop-box { width:100%; max-width:440px; background:#12121f; border-radius:24px; padding:22px; border:1px solid rgba(0,240,255,0.15); }
+.shop-box h2 { font-size:1.3rem; text-align:center; margin-bottom:14px; color:#00f0ff; }
+.shop-item { display:flex; align-items:center; gap:12px; padding:11px; background:rgba(255,255,255,0.03); border-radius:13px; margin-bottom:9px; border:1px solid rgba(255,255,255,0.05); }
+.shop-item-icon { font-size:1.8rem; }
+.shop-item-info { flex:1; }
+.shop-item-name { font-weight:600; font-size:0.9rem; }
+.shop-item-desc { font-size:0.72rem; color:#8888a0; margin-top:2px; }
+.shop-item-price { font-weight:700; color:#00ff88; font-size:0.95rem; white-space:nowrap; }
+
+/* Карточка тачки с фото */
+.car-card { background:rgba(255,255,255,0.03); border-radius:16px; padding:14px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.06); }
+.car-card h3 { font-size:1rem; margin-bottom:8px; color:#00f0ff; }
+.car-photos { display:flex; gap:6px; margin-bottom:10px; overflow-x:auto; }
+.car-photo { width:80px; height:55px; background:#1a1a2e; border-radius:8px; object-fit:cover; border:1px solid rgba(0,240,255,0.15); flex-shrink:0; }
+.car-photo.placeholder { display:flex; align-items:center; justify-content:center; color:#555; font-size:0.6rem; text-align:center; padding:4px; }
+.car-buy-row { display:flex; justify-content:space-between; align-items:center; }
+.car-price { font-weight:700; color:#00ff88; font-size:1.1rem; }
+
+/* VIP */
+.vip-banner { background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,0,170,0.1)); border:1px solid rgba(255,215,0,0.3); border-radius:14px; padding:14px; margin-bottom:12px; text-align:center; }
+.vip-banner h3 { color:#ffd700; font-size:1.1rem; margin-bottom:4px; }
+.vip-banner p { color:#8888a0; font-size:0.75rem; margin-bottom:10px; }
+.vip-price { font-size:1.3rem; font-weight:700; color:#ffd700; }
+
+/* Toast */
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+</style>
 </head>
 <body>
 
-<!-- Экран загрузки -->
+<!-- Загрузка -->
 <div id="screen-loading" class="screen active">
-  <div class="loading-container">
-    <div class="loading-car">🚗</div>
-    <h2>ОСАГО: Умный водитель</h2>
-    <div class="loading-bar"><div class="loading-progress"></div></div>
-    <div class="loading-text">Загрузка...</div>
+  <div class="load-box">
+    <div class="load-car">🚗</div>
+    <h2>Умный водитель с ОСАГО</h2>
+    <div class="load-bar"><div class="load-fill"></div></div>
+    <div style="color:#8888a0;font-size:0.85rem;">Загрузка 3D-движка...</div>
   </div>
 </div>
 
-<!-- Экран формы -->
+<!-- Форма -->
 <div id="screen-form" class="screen">
-  <div class="form-container">
-    <h1>🚗 ОСАГО: Умный водитель</h1>
-    <p class="subtitle">Рассчитай полис и проверь свои навыки!</p>
-
-    <div class="stats-bar">
-      <span>🏆 Лучший результат: <span id="stat-best">—</span></span>
-      <span>🎮 Игр сыграно: <span id="stat-games">0</span></span>
+  <div class="form-box">
+    <h1>🚗 Умный водитель с ОСАГО</h1>
+    <p class="form-sub">3D-аркада от первого лица. Пройди 10 заездов — снизь КБМ до минимума!</p>
+    <div class="stats-row">
+      <span>🏆 Лучший: <span id="stat-best">—</span></span>
+      <span>🎮 Сыграно: <span id="stat-games">0</span></span>
+      <span>⭐ КБМ: <span id="stat-kbm">3</span></span>
     </div>
-
     <div class="input-group">
-      <label for="city">🏙️ Город регистрации</label>
-      <select id="city">
-        <option value="0.8">Москва (коэф. 0.8)</option>
-        <option value="1.0" selected>Санкт-Петербург (коэф. 1.0)</option>
-        <option value="1.1">Екатеринбург (коэф. 1.1)</option>
-        <option value="1.2">Новосибирск (коэф. 1.2)</option>
-        <option value="1.5">Другой город (коэф. 1.5)</option>
-      </select>
+      <label>🏙️ Город регистрации</label>
+      <select id="city"><option value="0.8">Москва (0.8)</option><option value="1.0" selected>СПб (1.0)</option><option value="1.2">Екб (1.2)</option><option value="1.5">Другой (1.5)</option></select>
     </div>
-
     <div class="input-group">
-      <label for="experience">📅 История вождения</label>
-      <select id="experience">
-        <option value="13">13 класс — 0.5 (безаварийно 10+ лет)</option>
-        <option value="12">12 класс — 0.55 (9 лет)</option>
-        <option value="11">11 класс — 0.6 (8 лет)</option>
-        <option value="10">10 класс — 0.65 (7 лет)</option>
-        <option value="9">9 класс — 0.7 (6 лет)</option>
-        <option value="8">8 класс — 0.75 (5 лет)</option>
-        <option value="7">7 класс — 0.8 (4 года)</option>
-        <option value="6">6 класс — 0.85 (3 года)</option>
-        <option value="5">5 класс — 0.9 (2 года)</option>
-        <option value="4">4 класс — 0.95 (1 год)</option>
-        <option value="3" selected>3 класс — 1.0 (новичок)</option>
-        <option value="2">2 класс — 1.4 (1 авария)</option>
-        <option value="1">1 класс — 1.55 (2 аварии)</option>
-        <option value="0">0 класс — 2.3 (3+ аварии)</option>
-        <option value="M">M класс — 2.45 (много аварий)</option>
-      </select>
+      <label>⚡ Мощность (л.с.)</label>
+      <select id="power"><option value="0.6">до 50 (0.6)</option><option value="0.9">51–70 (0.9)</option><option value="1.0" selected>71–100 (1.0)</option><option value="1.2">101–150 (1.2)</option><option value="1.6">200+ (1.6)</option></select>
     </div>
-
-    <div class="input-group">
-      <label for="power">⚡ Мощность двигателя (л.с.)</label>
-      <select id="power">
-        <option value="0.6">до 50 л.с. (коэф. 0.6)</option>
-        <option value="0.9">51–70 л.с. (коэф. 0.9)</option>
-        <option value="1.0" selected>71–100 л.с. (коэф. 1.0)</option>
-        <option value="1.1">101–120 л.с. (коэф. 1.1)</option>
-        <option value="1.2">121–150 л.с. (коэф. 1.2)</option>
-        <option value="1.4">151–200 л.с. (коэф. 1.4)</option>
-        <option value="1.6">более 200 л.с. (коэф. 1.6)</option>
-      </select>
-    </div>
-
-    <div class="price-preview">
-      <span>💰 Стоимость полиса:</span>
-      <span id="preview-price">—</span>
-    </div>
-
-    <button id="btn-start" class="btn-cyber">🚀 Начать игру</button>
-
-    <div class="form-actions">
-      <button id="btn-leaderboard" class="btn-small">🏆 Топ</button>
-      <button id="btn-invite" class="btn-small">👥 Друзья</button>
+    <div class="price-box"><span>💰 Полис сейчас:</span><span id="preview-price">—</span></div>
+    <button id="btn-start" class="btn-cyber">🚀 Начать заезд</button>
+    <button id="btn-shop" class="btn-cyber btn-sec">🛒 Магазин</button>
+    <div class="form-btns">
+      <button id="btn-leaderboard" class="btn-sm">🏆 Топ</button>
+      <button id="btn-invite" class="btn-sm">👥 Друзья</button>
+      <button id="btn-donate" class="btn-sm">💝 Поддержать</button>
     </div>
   </div>
 </div>
 
-<!-- Экран игры -->
+<!-- Игра -->
 <div id="screen-game" class="screen">
-  <div class="dashboard">
-    <div class="dash-item"><span class="dash-label">Полис</span><span id="dash-price" class="dash-value">—</span></div>
-    <div class="dash-item"><span class="dash-label">Аварии</span><span id="dash-crashes" class="dash-value">0</span></div>
-    <div class="dash-item"><span class="dash-label">Класс</span><span id="dash-class" class="dash-value">3</span></div>
-    <div class="dash-item"><span class="dash-label">Время</span><span id="dash-time" class="dash-value">60</span></div>
-  </div>
-
-  <div id="game-area">
-    <div class="roadside left"></div>
-    <div id="road">
-      <div class="lane"></div>
-      <div class="lane"></div>
-      <div class="lane"></div>
+  <canvas id="game-canvas"></canvas>
+  <div class="hud">
+    <div class="hud-top">
+      <div class="hud-item"><span class="hud-label">Полис</span><span id="hud-price" class="hud-value">—</span></div>
+      <div class="hud-item"><span class="hud-label">Аварии</span><span id="hud-crashes" class="hud-value">0</span></div>
+      <div class="hud-item"><span class="hud-label">Класс</span><span id="hud-class" class="hud-value">3</span></div>
+      <div class="hud-item"><span class="hud-label">Заезд</span><span id="hud-lap" class="hud-value">1/10</span></div>
+      <div class="hud-item"><span class="hud-label">До финиша</span><span id="hud-dist" class="hud-value">1000м</span></div>
     </div>
-    <div class="roadside right"></div>
-    <div id="player-car">
-      <svg viewBox="0 0 80 48"><rect x="10" y="8" width="60" height="32" rx="8" fill="#00f0ff"/><rect x="18" y="12" width="20" height="16" rx="4" fill="#0a0a12" opacity="0.6"/><circle cx="22" cy="36" r="6" fill="#333"/><circle cx="58" cy="36" r="6" fill="#333"/></svg>
-    </div>
-    <div id="touch-left" class="touch-zone"></div>
-    <div id="touch-right" class="touch-zone"></div>
   </div>
-
-  <div id="controls-hint">
-    <span>◀ Тап слева — влево</span>
-    <span>Тап справа — вправо ▶</span>
-  </div>
+  <svg id="steering-wheel" viewBox="0 0 200 200">
+    <defs><filter id="wheelShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.6"/></filter></defs>
+    <g id="wheel-group" transform="translate(100,100)">
+      <circle cx="0" cy="0" r="90" fill="none" stroke="#1a1a2e" stroke-width="18" filter="url(#wheelShadow)"/>
+      <circle cx="0" cy="0" r="90" fill="none" stroke="#2a2a3e" stroke-width="14"/>
+      <circle cx="0" cy="0" r="90" fill="none" stroke="#3a3a4e" stroke-width="2" stroke-dasharray="8 6"/>
+      <circle cx="0" cy="0" r="35" fill="#1a1a2e" stroke="#3a3a4e" stroke-width="2"/>
+      <rect x="-6" y="-90" width="12" height="35" rx="4" fill="#ff3333"/>
+      <rect x="-6" y="55" width="12" height="35" rx="4" fill="#00ff88"/>
+      <line x1="0" y1="-55" x2="0" y2="-20" stroke="#555" stroke-width="3"/>
+      <line x1="0" y1="20" x2="0" y2="55" stroke="#555" stroke-width="3"/>
+      <circle cx="0" cy="0" r="8" fill="#00f0ff"/>
+    </g>
+  </svg>
+  <div id="touch-left" class="touch-zone"></div>
+  <div id="touch-right" class="touch-zone"></div>
 </div>
 
-<!-- Экран паузы -->
+<!-- Пауза -->
 <div id="screen-pause" class="screen">
-  <div class="pause-container">
+  <div class="pause-box">
     <h2>⏸️ Пауза</h2>
-    <p>Игра приостановлена</p>
+    <p>Заезд приостановлен</p>
     <button id="btn-resume" class="btn-cyber">▶ Продолжить</button>
-    <button id="btn-quit" class="btn-cyber btn-secondary">🏠 В меню</button>
+    <button id="btn-quit" class="btn-cyber btn-sec">🏠 В меню</button>
   </div>
 </div>
 
-<!-- Экран второго шанса -->
-<div id="screen-second-chance" class="screen">
-  <div class="second-chance-container">
-    <div class="second-chance-icon">🎬</div>
-    <h2>Второй шанс!</h2>
-    <p>Посмотри короткий ролик — и мы отменим последнюю аварию. Твой КБМ вернётся к прежнему значению!</p>
-    <button id="btn-second-chance" class="btn-cyber">▶ Смотреть ролик</button>
-    <button id="btn-skip-second-chance" class="btn-cyber btn-secondary">❌ Пропустить</button>
-  </div>
-</div>
-
-<!-- Экран результата -->
+<!-- Результат -->
 <div id="screen-result" class="screen">
-  <div class="result-container">
-    <h2>🏁 Игра окончена!</h2>
+  <div class="result-box">
+    <h2>🏁 Заезд окончен!</h2>
     <div class="result-card">
-      <div class="result-item"><span>Начальная стоимость:</span><span id="res-start-price">—</span></div>
-      <div class="result-item"><span>Аварий совершено:</span><span id="res-crashes">—</span></div>
-      <div class="result-item"><span>Итоговый класс КБМ:</span><span id="res-final-class">—</span></div>
-      <div class="result-item highlight"><span>Итоговая стоимость полиса:</span><span id="res-final-price">—</span></div>
-      <div class="result-item"><span>Твой ранг:</span><span id="res-rank">—</span></div>
+      <div class="result-row"><span>Начальная стоимость:</span><span id="res-start">—</span></div>
+      <div class="result-row"><span>Аварий:</span><span id="res-crashes">—</span></div>
+      <div class="result-row"><span>Итоговый класс:</span><span id="res-class">—</span></div>
+      <div class="result-row hl"><span>Итоговый полис:</span><span id="res-price">—</span></div>
+      <div class="result-row"><span>Ранг:</span><span id="res-rank">—</span></div>
     </div>
-    <p id="res-message" class="result-message"></p>
-    <div class="result-card" style="margin-bottom: 12px;">
-      <div class="result-item"><span>🏆 Лучший результат:</span><span id="res-best-score">—</span></div>
-      <div class="result-item"><span>🎮 Всего игр:</span><span id="res-games-played">—</span></div>
+    <p id="res-msg" class="result-msg"></p>
+    <div class="result-card" style="margin-bottom:12px;">
+      <div class="result-row"><span>🏆 Лучший результат:</span><span id="res-best">—</span></div>
+      <div class="result-row"><span>🎮 Заездов всего:</span><span id="res-total">—</span></div>
+      <div class="result-row"><span>⭐ Текущий КБМ:</span><span id="res-kbm">—</span></div>
     </div>
-    <button id="btn-restart" class="btn-cyber">🔄 Играть снова</button>
-    <button id="btn-leaderboard-result" class="btn-cyber btn-secondary">🏆 Топ игроков</button>
-    <button id="btn-share" class="btn-cyber btn-share">📤 Поделиться</button>
+    <button id="btn-next" class="btn-cyber">🚀 Следующий заезд</button>
+    <button id="btn-menu" class="btn-cyber btn-sec">🏠 В меню</button>
+    <button id="btn-share" class="btn-cyber btn-pink">📤 Поделиться</button>
+  </div>
+</div>
+
+<!-- Магазин -->
+<div id="screen-shop" class="screen">
+  <div class="shop-box">
+    <h2>🛒 Магазин</h2>
+
+    <!-- Бусты -->
+    <div class="shop-item">
+      <span class="shop-item-icon">🛡️</span>
+      <div class="shop-item-info"><div class="shop-item-name">Безаварийный режим</div><div class="shop-item-desc">30 сек неуязвимости в начале заезда</div></div>
+      <span class="shop-item-price">50₽</span>
+    </div>
+    <div class="shop-item">
+      <span class="shop-item-icon">🔄</span>
+      <div class="shop-item-info"><div class="shop-item-name">Второй шанс</div><div class="shop-item-desc">Отмени последнюю аварию без рекламы</div></div>
+      <span class="shop-item-price">30₽</span>
+    </div>
+
+    <!-- Премиум-тачки -->
+    <div class="car-card">
+      <h3>🏎️ BMW M3 Competition</h3>
+      <div class="car-photos">
+        <div class="car-photo placeholder">Фото 1<br>сбоку</div>
+        <div class="car-photo placeholder">Фото 2<br>сзади</div>
+        <div class="car-photo placeholder">Фото 3<br>салон</div>
+        <div class="car-photo placeholder">Фото 4<br>приборка</div>
+      </div>
+      <div class="car-buy-row">
+        <span style="color:#8888a0;font-size:0.75rem;">Спортивная приборка</span>
+        <span class="car-price">30₽</span>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <h3>🚙 Haval Jolion</h3>
+      <div class="car-photos">
+        <div class="car-photo placeholder">Фото 1<br>сбоку</div>
+        <div class="car-photo placeholder">Фото 2<br>сзади</div>
+        <div class="car-photo placeholder">Фото 3<br>салон</div>
+        <div class="car-photo placeholder">Фото 4<br>приборка</div>
+      </div>
+      <div class="car-buy-row">
+        <span style="color:#8888a0;font-size:0.75rem;">Внедорожный стиль</span>
+        <span class="car-price">60₽</span>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <h3>🚐 Toyota Sequoia</h3>
+      <div class="car-photos">
+        <div class="car-photo placeholder">Фото 1<br>сбоку</div>
+        <div class="car-photo placeholder">Фото 2<br>сзади</div>
+        <div class="car-photo placeholder">Фото 3<br>салон</div>
+        <div class="car-photo placeholder">Фото 4<br>приборка</div>
+      </div>
+      <div class="car-buy-row">
+        <span style="color:#8888a0;font-size:0.75rem;">Премиум-внедорожник</span>
+        <span class="car-price">100₽</span>
+      </div>
+    </div>
+
+    <!-- VIP -->
+    <div class="vip-banner">
+      <h3>👑 VIP-подписка</h3>
+      <p>Все тачки + без рекламы + ежедневный бонус</p>
+      <span class="vip-price">150₽ / мес</span>
+    </div>
+
+    <button id="btn-shop-back" class="btn-cyber btn-sec">🔙 Назад</button>
   </div>
 </div>
 
 <!-- Оверлей аварии -->
-<div id="crash-overlay" class="hidden">
-  <div class="crash-popup">
+<div id="crash-overlay">
+  <div class="crash-box">
     <span class="crash-icon">💥</span>
-    <h3 style="color:#ff3333; margin-bottom:8px;">Авария!</h3>
-    <p class="crash-text">КБМ повышен, полис дороже</p>
+    <h3 style="color:#ff3333;margin-bottom:6px;">Авария!</h3>
+    <p style="color:#8888a0;font-size:0.85rem;">КБМ повышен, полис дороже</p>
   </div>
 </div>
 
-<!-- Баннер рекламы (placeholder) -->
-<div id="ad-banner" class="ad-banner hidden">Реклама</div>
-
-<script src="script.js"></script>
+<script src="game3d.js"></script>
 </body>
 </html>
