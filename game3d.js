@@ -99,28 +99,34 @@ function createRoad() {
   function lastY() { return segments.length === 0 ? 0 : segments[segments.length - 1].p2.world.y; }
 
   // Старт
-  for (var n = 0; n < 50; n++) addSegment(0, 0);
-  // Лес
-  for (n = 0; n < 200; n++) addSegment(Math.sin(n / 30) * 2, Math.sin(n / 20) * 500);
+  for (var n = 0; n < 100; n++) addSegment(0, 0);
+  // Лес — длинный участок
+  for (n = 0; n < 400; n++) addSegment(Math.sin(n / 30) * 2, Math.sin(n / 20) * 500);
   // Переход
-  for (n = 0; n < 50; n++) addSegment(0, lastY());
+  for (n = 0; n < 80; n++) addSegment(0, lastY());
   // Поле
-  for (n = 0; n < 200; n++) addSegment(Math.sin(n / 40) * 3, 0);
+  for (n = 0; n < 400; n++) addSegment(Math.sin(n / 40) * 3, 0);
   // Переход
-  for (n = 0; n < 50; n++) addSegment(0, lastY());
+  for (n = 0; n < 80; n++) addSegment(0, lastY());
   // Город
-  for (n = 0; n < 200; n++) addSegment((n % 60 < 30 ? 2 : -2), 0);
-  // Финиш
-  for (n = 0; n < 100; n++) addSegment(0, 0);
+  for (n = 0; n < 400; n++) addSegment((n % 80 < 40 ? 2 : -2), 0);
+  // Финишная прямая
+  for (n = 0; n < 200; n++) addSegment(0, 0);
 
   game.trackLength = segments.length * SEGMENT_LENGTH;
 
-  // Препятствия
-  for (n = 0; n < 30; n++) {
-    var idx = randomInt(50, segments.length - 100);
+  // Препятствия — 80 штук, по центру 3 полос
+  var laneOffsets = [-0.55, 0, 0.55]; // левая, центр, правая полоса
+  var carTypes = ['sedan', 'taxi', 'police', 'truck', 'deer'];
+  for (n = 0; n < 80; n++) {
+    var idx = randomInt(120, segments.length - 250);
+    // Не ставим 2 препятствия на один сегмент
+    if (segments[idx].sprites.length > 0) continue;
     segments[idx].sprites.push({
-      source: randomChoice(['🚗','🚕','🚓','🚛','🦌']),
-      offset: randomChoice([-0.8, -0.3, 0.3, 0.8])
+      type: randomChoice(carTypes),
+      offset: randomChoice(laneOffsets),
+      width: 0.5,
+      color: randomChoice(['#cc2222', '#eeeeee', '#2222cc', '#ccaa22', '#888888'])
     });
   }
 }
@@ -225,28 +231,181 @@ function drawPoly(x1, y1, x2, y2, x3, y3, x4, y4, color) {
 }
 
 function renderSprite(segment, sprite, scale) {
-  // Масштаб спрайта — чем ближе, тем крупнее
-  var spriteScale = scale * (W / 800);
-  var sw = Math.max(20, 100 * spriteScale);
-  var sh = Math.max(20, 100 * spriteScale);
+  var spriteScale = scale * (W / 600);
+  var sw = Math.max(30, 180 * spriteScale);  // ширина машинки
+  var sh = Math.max(40, 220 * spriteScale);  // высота машинки
 
-  // Позиция по X: центр сегмента + смещение по полосе
   var sx = segment.p1.screen.x + (sprite.offset * segment.p1.screen.w) - sw / 2;
-  // Позиция по Y: на дороге, а не в воздухе
-  var sy = segment.p1.screen.y - sh * 0.8;
+  var sy = segment.p1.screen.y - sh * 0.85;
 
-  // Не рисуем за пределами экрана
   if (sx < -sw || sx > W + sw || sy < -sh || sy > H + sh) return;
 
-  // Рисуем эмодзи крупным шрифтом
-  var fontSize = Math.round(Math.max(16, sh));
-  ctx.font = fontSize + 'px "Segoe UI Emoji", "Apple Color Emoji", Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(sprite.source, sx + sw / 2, sy + sh);
+  var cx = sx + sw / 2;
+  var cy = sy + sh;
+  var w = sw;
+  var h = sh;
 
-  // Отладка: рамка вокруг спрайта (убрать в продакшене)
-  // ctx.strokeStyle = 'red'; ctx.strokeRect(sx, sy, sw, sh);
+  // Рисуем машинку спереди (вид с фарами)
+  drawCarFront(cx, cy, w, h, sprite.type, sprite.color);
+}
+
+function drawCarFront(cx, cy, w, h, type, color) {
+  var bw = w * 0.9;  // ширина кузова
+  var bh = h * 0.75; // высота кузова
+  var bx = cx - bw / 2;
+  var by = cy - bh;
+
+  // Тень
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - 5, bw * 0.5, h * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (type === 'truck') {
+    // Грузовик — высокий и узкий
+    bh = h * 0.85;
+    by = cy - bh;
+    // Кабина
+    ctx.fillStyle = color;
+    ctx.fillRect(bx + bw * 0.15, by, bw * 0.7, bh * 0.55);
+    // Кузов
+    ctx.fillStyle = '#555';
+    ctx.fillRect(bx + bw * 0.05, by + bh * 0.5, bw * 0.9, bh * 0.45);
+    // Фары
+    ctx.fillStyle = '#ffee88';
+    ctx.fillRect(bx + bw * 0.2, by + bh * 0.45, bw * 0.12, bh * 0.08);
+    ctx.fillRect(bx + bw * 0.68, by + bh * 0.45, bw * 0.12, bh * 0.08);
+    // Решётка
+    ctx.fillStyle = '#333';
+    ctx.fillRect(bx + bw * 0.35, by + bh * 0.5, bw * 0.3, bh * 0.1);
+  } else if (type === 'deer') {
+    // Олень — упрощённый силуэт
+    ctx.fillStyle = '#8B7355';
+    // Тело
+    ctx.beginPath();
+    ctx.ellipse(cx, by + bh * 0.5, bw * 0.25, bh * 0.25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Голова
+    ctx.beginPath();
+    ctx.arc(cx, by + bh * 0.25, bw * 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    // Рога
+    ctx.strokeStyle = '#6B5344';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, by + bh * 0.15);
+    ctx.lineTo(cx - 15, by);
+    ctx.moveTo(cx + 5, by + bh * 0.15);
+    ctx.lineTo(cx + 15, by);
+    ctx.stroke();
+    // Глаза
+    ctx.fillStyle = '#ff3333';
+    ctx.beginPath();
+    ctx.arc(cx - 4, by + bh * 0.22, 2, 0, Math.PI * 2);
+    ctx.arc(cx + 4, by + bh * 0.22, 2, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Легковая машина — седан, такси, полиция
+    // Кузов (трапеция — шире снизу)
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.1, by + bh * 0.35);  // левый верх
+    ctx.lineTo(bx + bw * 0.9, by + bh * 0.35);  // правый верх
+    ctx.lineTo(bx + bw, by + bh);               // правый низ
+    ctx.lineTo(bx, by + bh);                    // левый низ
+    ctx.closePath();
+    ctx.fill();
+
+    // Капот
+    ctx.fillStyle = shadeColor(color, -20);
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.15, by + bh * 0.55);
+    ctx.lineTo(bx + bw * 0.85, by + bh * 0.55);
+    ctx.lineTo(bx + bw * 0.95, by + bh * 0.85);
+    ctx.lineTo(bx + bw * 0.05, by + bh * 0.85);
+    ctx.closePath();
+    ctx.fill();
+
+    // Лобовое стекло
+    ctx.fillStyle = '#1a3a5a';
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.2, by + bh * 0.38);
+    ctx.lineTo(bx + bw * 0.8, by + bh * 0.38);
+    ctx.lineTo(bx + bw * 0.85, by + bh * 0.55);
+    ctx.lineTo(bx + bw * 0.15, by + bh * 0.55);
+    ctx.closePath();
+    ctx.fill();
+
+    // Фары
+    ctx.fillStyle = '#fffee0';
+    ctx.beginPath();
+    ctx.ellipse(bx + bw * 0.22, by + bh * 0.72, bw * 0.1, bh * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(bx + bw * 0.78, by + bh * 0.72, bw * 0.1, bh * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Свет от фар
+    ctx.fillStyle = 'rgba(255,255,200,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.12, by + bh * 0.75);
+    ctx.lineTo(bx + bw * 0.32, by + bh * 0.75);
+    ctx.lineTo(bx + bw * 0.5, by + bh * 1.5);
+    ctx.lineTo(bx - bw * 0.1, by + bh * 1.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.68, by + bh * 0.75);
+    ctx.lineTo(bx + bw * 0.88, by + bh * 0.75);
+    ctx.lineTo(bx + bw * 1.1, by + bh * 1.5);
+    ctx.lineTo(bx + bw * 0.5, by + bh * 1.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Решётка радиатора
+    ctx.fillStyle = '#222';
+    ctx.fillRect(bx + bw * 0.35, by + bh * 0.82, bw * 0.3, bh * 0.08);
+
+    // Бампер
+    ctx.fillStyle = shadeColor(color, -30);
+    ctx.fillRect(bx + bw * 0.05, by + bh * 0.88, bw * 0.9, bh * 0.12);
+
+    // Номер
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(bx + bw * 0.38, by + bh * 0.9, bw * 0.24, bh * 0.06);
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold ' + Math.round(bh * 0.04) + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('A 123', cx, by + bh * 0.945);
+
+    if (type === 'police') {
+      // Мигалка
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(bx + bw * 0.35, by + bh * 0.32, bw * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0000ff';
+      ctx.beginPath();
+      ctx.arc(bx + bw * 0.65, by + bh * 0.32, bw * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (type === 'taxi') {
+      // Шашечки такси
+      ctx.fillStyle = '#ffcc00';
+      ctx.fillRect(bx + bw * 0.42, by + bh * 0.28, bw * 0.16, bh * 0.06);
+    }
+  }
+}
+
+// Затемнение / осветление цвета
+function shadeColor(color, percent) {
+  var num = parseInt(color.replace("#",""), 16);
+  var amt = Math.round(2.55 * percent);
+  var R = (num >> 16) + amt;
+  var G = (num >> 8 & 0x00FF) + amt;
+  var B = (num & 0x0000FF) + amt;
+  return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
 }
 
 function renderLandscape() {
