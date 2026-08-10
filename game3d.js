@@ -183,9 +183,10 @@ function render() {
     maxy = segment.p1.screen.y;
   }
 
-  // Спрайты
+  // Спрайты (рисуем от дальних к ближним)
   for (var n = DRAW_DISTANCE - 1; n > 0; n--) {
     var segment = segments[(baseSegment.index + n) % segments.length];
+    if (!segment.p1.screen.scale) continue;
     for (var i = 0; i < segment.sprites.length; i++) {
       renderSprite(segment, segment.sprites[i], segment.p1.screen.scale);
     }
@@ -224,13 +225,28 @@ function drawPoly(x1, y1, x2, y2, x3, y3, x4, y4, color) {
 }
 
 function renderSprite(segment, sprite, scale) {
-  var sw = 80 * scale * W / 800;
-  var sh = 80 * scale * W / 800;
-  var sx = segment.p1.screen.x + (scale * sprite.offset * ROAD_WIDTH * W / 2) - sw / 2;
-  var sy = segment.p1.screen.y - sh;
-  ctx.font = Math.round(sh) + 'px Arial';
+  // Масштаб спрайта — чем ближе, тем крупнее
+  var spriteScale = scale * (W / 800);
+  var sw = Math.max(20, 100 * spriteScale);
+  var sh = Math.max(20, 100 * spriteScale);
+
+  // Позиция по X: центр сегмента + смещение по полосе
+  var sx = segment.p1.screen.x + (sprite.offset * segment.p1.screen.w) - sw / 2;
+  // Позиция по Y: на дороге, а не в воздухе
+  var sy = segment.p1.screen.y - sh * 0.8;
+
+  // Не рисуем за пределами экрана
+  if (sx < -sw || sx > W + sw || sy < -sh || sy > H + sh) return;
+
+  // Рисуем эмодзи крупным шрифтом
+  var fontSize = Math.round(Math.max(16, sh));
+  ctx.font = fontSize + 'px "Segoe UI Emoji", "Apple Color Emoji", Arial, sans-serif';
   ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
   ctx.fillText(sprite.source, sx + sw / 2, sy + sh);
+
+  // Отладка: рамка вокруг спрайта (убрать в продакшене)
+  // ctx.strokeStyle = 'red'; ctx.strokeRect(sx, sy, sw, sh);
 }
 
 function renderLandscape() {
