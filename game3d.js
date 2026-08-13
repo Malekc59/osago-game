@@ -1,5 +1,7 @@
-// Умный водитель с ОСАГО — 3D-движок v1.2
-// Исправлено: масштаб спрайтов, вид спереди, длина трека
+  
+// Умный водитель с ОСАГО — 3D-движок v2.0 (YaGames Edition)
+// Убрано: VK Bridge
+// Добавлено: YaGames SDK, мобильное управление, звуки, облачные сохранения, реклама
 
 var canvas, ctx;
 var W, H;
@@ -53,21 +55,292 @@ var PRICES = {
   bmw: 30, haval: 60, toyota: 100, vip: 150
 };
 
-// === VK BRIDGE ===
-var vkBridge = null, isVK = false, vkBridgeReady = false;
-function initVK() {
+// === YANDEX GAMES SDK ===
+var ysdk = null;
+var player = null;
+var lb = null;
+var isYaGames = false;
+var yaGamesReady = false;
+
+function initYaGames() {
+  if (typeof YaGames === 'undefined') {
+    console.log('ℹ️ YaGames SDK не найден — режим локальной разработки');
+    isYaGames = false;
+    yaGamesReady = false;
+    bootstrap();
+    return;
+  }
+
+  YaGames.init({
+    adv: { onAdvClose: function(wasShown) { console.log('Реклама закрыта, показана:', wasShown); } }
+  }).then(function(_ysdk) {
+    ysdk = _ysdk;
+    isYaGames = true;
+    console.log('✅ YaGames SDK инициализирован');
+
+    // Сообщаем платформе, что игра загружается
+    ysdk.features.LoadingAPI.ready();
+
+    // Получаем игрока
+    return ysdk.getPlayer({ scopes: false });
+  }).then(function(_player) {
+    player = _player;
+    console.log('👤 Игрок:', player.getName() || 'Гость');
+
+    // Получаем таблицы лидеров
+    return ysdk.getLeaderboards();
+  }).then(function(_lb) {
+    lb = _lb;
+    console.log('🏆 Таблицы лидеров готовы');
+    yaGamesReady = true;
+
+    // Загружаем облачные сохранения
+    return loadCloudProgress();
+  }).then(function() {
+    console.log('☁️ Облачный прогресс загружен');
+    bootstrap();
+  }).catch(function(err) {
+    console.warn('⚠️ Ошибка YaGames:', err);
+    isYaGames = false;
+    yaGamesReady = false;
+    bootstrap();
+  });
+}
+
+// === ОБЛАЧНЫЕ СОХРАНЕНИЯ ===
+function saveCloudProgress() {
+  if (!player || !isYaGames) {
+    saveLocalProgress();
+    return Promise.resolve();
+  }
+  var data = {
+    bestScore: game.bestScore,
+    gamesPlayed: game.gamesPlayed,
+    totalCrashes: game.totalCrashes,
+    ownedCars: game.ownedCars,
+    activeCar: game.activeCar,
+    hasVIP: game.hasVIP,
+    currentClass: game.currentClass,
+    currentKBM: game.currentKBM
+  };
+  return player.setData(data).then(function() {
+    console.log('☁️ Прогресс сохранён в облако');
+  }).catch(function(err) {
+    console.warn('⚠️ Ошибка сохранения в облако:', err);
+    saveLocalProgress();
+  });
+}
+
+function loadCloudProgress() {
+  if (!player || !isYaGames) {
+    loadLocalProgress();
+    return Promise.resolve();
+  }
+  return player.getData().then(function(data) {
+    if (data && Object.keys(data).length > 0) {
+      game.bestScore = data.bestScore || 0;
+      game.gamesPlayed = data.gamesPlayed || 0;
+      game.totalCrashes = data.totalCrashes || 0;
+      game.ownedCars = data.ownedCars || ['default'];
+      game.activeCar = data.activeCar || 'default';
+      game.hasVIP = data.hasVIP || false;
+      game.currentClass = data.currentClass || 3;
+      game.currentKBM = data.currentKBM || 1.0;
+      console.log('☁️ Данные из облака применены');
+    } else {
+      loadLocalProgress();
+    }
+  }).catch(function(err) {
+    console.warn('⚠️ Ошибка загрузки из облака:', err);
+    loadLocalProgress();
+  });
+}
+
+// === ЛОКАЛЬНЫЕ СОХРАНЕНИЯ (фолбэк) ===
+function saveLocalProgress() {
   try {
-    var bridge = window.vkBridge || (typeof vkBridge !== 'undefined' ? vkBridge : null) || window.bridge;
-    if (bridge) {
-      vkBridge = bridge; isVK = true;
-      bridge.send('VKWebAppInit').then(function(d) {
-        if (d.result) { vkBridgeReady = true;
-          bridge.send('VKWebAppResizeWindow', {width:1000,height:2000}).catch(function(){});
-          bridge.send('VKWebAppSetViewSettings', {status_bar_style:'light',action_bar_color:'#0a0a12'}).catch(function(){});
-        }
-      }).catch(function(){});
+    localStorage.setItem('umny_voditel_progress', JSON.stringify({
+      bestScore: game.bestScore, gamesPlayed: game.gamesPlayed,
+      totalCrashes: game.totalCrashes, ownedCars: game.ownedCars,
+      activeCar: game.activeCar, hasVIP: game.hasVIP,
+      currentClass: game.currentClass, currentKBM: game.currentKBM
+    }));
+  } catch(e) {}
+}
+function loadLocalProgress() {
+  try {
+    var d = JSON.parse(localStorage.getItem('umny_voditel_progress'));
+    if (d) {
+      game.bestScore = d.bestScore || 0; game.gamesPlayed = d.gamesPlayed || 0;
+      game.totalCrashes = d.totalCrashes || 0; game.ownedCars = d.ownedCars || ['default'];
+      game.activeCar = d.activeCar || 'default'; game.hasVIP = d.hasVIP || false;
+      game.currentClass = d.currentClass || 3; game.currentKBM = d.currentKBM || 1.0;
     }
   } catch(e) {}
+}
+
+// === РЕКЛАМА ===
+function showFullscreenAd() {
+  if (!ysdk || !isYaGames) {
+    console.log('ℹ️ Реклама недоступна (локальный режим)');
+    return Promise.resolve(false);
+  }
+  return ysdk.adv.showFullscreenAdv({
+    callbacks: {
+      onClose: function() { console.log('Fullscreen ad закрыт'); },
+      onError: function(err) { console.warn('Ошибка рекламы:', err); }
+    }
+  });
+}
+
+function showRewardedAd(callback) {
+  if (!ysdk || !isYaGames) {
+    console.log('ℹ️ Rewarded ad недоступен (локальный режим)');
+    if (callback) callback(false);
+    return;
+  }
+  ysdk.adv.showRewardedVideo({
+    callbacks: {
+      onOpen: function() {
+        console.log('Rewarded video открыт');
+        // Ставим игру на паузу
+        if (game.isRunning && !game.isPaused) {
+          game.isPaused = true;
+        }
+      },
+      onRewarded: function() {
+        console.log('✅ Награда получена');
+        if (callback) callback(true);
+      },
+      onClose: function() {
+        console.log('Rewarded video закрыт');
+        if (game.isPaused) {
+          game.isPaused = false;
+          lastTime = 0;
+          requestAnimationFrame(gameLoop);
+        }
+      },
+      onError: function(err) {
+        console.warn('Ошибка rewarded video:', err);
+        if (game.isPaused) {
+          game.isPaused = false;
+          lastTime = 0;
+          requestAnimationFrame(gameLoop);
+        }
+        if (callback) callback(false);
+      }
+    }
+  });
+}
+
+// === ТАБЛИЦЫ ЛИДЕРОВ ===
+function showLeaderboard() {
+  if (!ysdk || !isYaGames) {
+    showToast('🏆 Таблицы лидеров доступны только в Яндекс.Играх');
+    return;
+  }
+  ysdk.getLeaderboards().then(function(_lb) {
+    return _lb.getLeaderboardPlayerEntry('bestScore');
+  }).then(function(res) {
+    console.log('🏆 Лидерборд:', res);
+    showToast('🏆 Ваш рекорд: ' + formatPrice(game.bestScore));
+  }).catch(function(err) {
+    console.warn('Ошибка лидерборда:', err);
+    showToast('🏆 Пока нет записей в таблице лидеров');
+  });
+}
+
+function setLeaderboardScore(score) {
+  if (!ysdk || !isYaGames || !lb) return;
+  lb.setLeaderboardScore('bestScore', score).then(function() {
+    console.log('🏆 Рекорд отправлен в таблицу лидеров');
+  }).catch(function(err) {
+    console.warn('Ошибка отправки в лидерборд:', err);
+  });
+}
+
+// === ЗВУК ===
+var audioCtx = null;
+var sounds = {};
+
+function initAudio() {
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Генерируем звуки программно (без внешних файлов)
+    sounds.crash = createNoiseBuffer(0.3, 'square', 150, 50);
+    sounds.engine = createEngineBuffer();
+    sounds.win = createToneBuffer(0.5, 'sine', 880, 440);
+    sounds.click = createToneBuffer(0.1, 'sine', 1200, 800);
+  } catch(e) {
+    console.warn('⚠️ Web Audio API не поддерживается');
+  }
+}
+
+function createNoiseBuffer(duration, type, freqStart, freqEnd) {
+  if (!audioCtx) return null;
+  var sampleRate = audioCtx.sampleRate;
+  var length = sampleRate * duration;
+  var buffer = audioCtx.createBuffer(1, length, sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < length; i++) {
+    var t = i / length;
+    var freq = freqStart + (freqEnd - freqStart) * t;
+    data[i] = Math.sin(2 * Math.PI * freq * t) * (1 - t) * 0.3;
+    if (type === 'square') data[i] = data[i] > 0 ? 0.3 * (1-t) : -0.3 * (1-t);
+  }
+  return buffer;
+}
+
+function createEngineBuffer() {
+  if (!audioCtx) return null;
+  var sampleRate = audioCtx.sampleRate;
+  var length = sampleRate * 1.0;
+  var buffer = audioCtx.createBuffer(1, length, sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < length; i++) {
+    var t = i / sampleRate;
+    data[i] = (Math.sin(2 * Math.PI * 60 * t) * 0.05 + Math.random() * 0.02) * 0.3;
+  }
+  return buffer;
+}
+
+function createToneBuffer(duration, type, freqStart, freqEnd) {
+  if (!audioCtx) return null;
+  var sampleRate = audioCtx.sampleRate;
+  var length = sampleRate * duration;
+  var buffer = audioCtx.createBuffer(1, length, sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < length; i++) {
+    var t = i / length;
+    var freq = freqStart + (freqEnd - freqStart) * t;
+    data[i] = Math.sin(2 * Math.PI * freq * t) * (1 - t) * 0.2;
+  }
+  return buffer;
+}
+
+function playSound(name) {
+  if (!audioCtx || !sounds[name]) return;
+  try {
+    var source = audioCtx.createBufferSource();
+    source.buffer = sounds[name];
+    var gain = audioCtx.createGain();
+    gain.gain.value = 0.3;
+    source.connect(gain);
+    gain.connect(audioCtx.destination);
+    source.start();
+  } catch(e) {}
+}
+
+function playEngine() {
+  if (!audioCtx || !sounds.engine) return;
+  // Простой луп мотора
+}
+
+// === ВИБРАЦИЯ ===
+function vibrate(pattern) {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
 }
 
 // === УТИЛИТЫ ===
@@ -230,22 +503,13 @@ function drawPoly(x1, y1, x2, y2, x3, y3, x4, y4, color) {
 
 // === РИСОВАНИЕ СПРАЙТОВ — ВИД СПЕРЕДИ ===
 function renderSprite(segment, sprite, scale) {
-  // scale = cameraDepth / cameraZ для ближнего края сегмента
-  // Чем ближе к камере, тем меньше cameraZ, тем больше scale
   var spriteScale = scale * (W / 800);
-
-  // Размер на экране
   var sw = Math.max(20, 140 * spriteScale);
   var sh = Math.max(25, 180 * spriteScale);
-
-  // Позиция на экране
   var sx = segment.p2.screen.x + (sprite.offset * segment.p2.screen.w) - sw / 2;
   var sy = segment.p2.screen.y - sh * 0.85;
 
-  // Не рисуем за пределами
   if (sx < -sw || sx > W + sw || sy < -sh || sy > H + sh) return;
-
-  // Рисуем машинку спереди
   drawCarFront(sx, sy, sw, sh, sprite.type, sprite.color);
 }
 
@@ -254,7 +518,6 @@ function drawCarFront(x, y, w, h, type, color) {
   var cy = y + h;
 
   if (type === 'deer') {
-    // Олень
     ctx.fillStyle = '#8B7355';
     ctx.beginPath(); ctx.ellipse(cx, cy - h * 0.5, w * 0.3, h * 0.3, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(cx, cy - h * 0.75, w * 0.2, 0, Math.PI * 2); ctx.fill();
@@ -266,34 +529,26 @@ function drawCarFront(x, y, w, h, type, color) {
   }
 
   if (type === 'truck') {
-    // Грузовик — высокий
     var bw = w * 0.85, bh = h * 0.9, bx = cx - bw / 2, by = cy - bh;
-    // Кабина
     ctx.fillStyle = color;
     ctx.fillRect(bx + bw * 0.15, by, bw * 0.7, bh * 0.5);
-    // Кузов
     ctx.fillStyle = '#555';
     ctx.fillRect(bx + bw * 0.05, by + bh * 0.45, bw * 0.9, bh * 0.5);
-    // Лобовое
     ctx.fillStyle = '#1a3a5a';
     ctx.fillRect(bx + bw * 0.2, by + bh * 0.05, bw * 0.6, bh * 0.2);
-    // Фары
     ctx.fillStyle = '#ffee88';
     ctx.beginPath(); ctx.ellipse(bx + bw * 0.25, by + bh * 0.55, bw * 0.08, bh * 0.05, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(bx + bw * 0.75, by + bh * 0.55, bw * 0.08, bh * 0.05, 0, 0, Math.PI * 2); ctx.fill();
-    // Решётка
     ctx.fillStyle = '#333';
     ctx.fillRect(bx + bw * 0.35, by + bh * 0.62, bw * 0.3, bh * 0.08);
-    // Бампер
     ctx.fillStyle = '#444';
     ctx.fillRect(bx + bw * 0.1, by + bh * 0.85, bw * 0.8, bh * 0.12);
     return;
   }
 
-  // Легковая машина (sedan, taxi, police)
+  // Легковая машина
   var bw = w * 0.9, bh = h * 0.85, bx = cx - bw / 2, by = cy - bh;
 
-  // Кузов (трапеция — шире снизу)
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(bx + bw * 0.1, by + bh * 0.35);
@@ -303,7 +558,6 @@ function drawCarFront(x, y, w, h, type, color) {
   ctx.closePath();
   ctx.fill();
 
-  // Капот
   ctx.fillStyle = shadeColor(color, -20);
   ctx.beginPath();
   ctx.moveTo(bx + bw * 0.15, by + bh * 0.55);
@@ -313,7 +567,6 @@ function drawCarFront(x, y, w, h, type, color) {
   ctx.closePath();
   ctx.fill();
 
-  // Лобовое стекло
   ctx.fillStyle = '#1a3a5a';
   ctx.beginPath();
   ctx.moveTo(bx + bw * 0.2, by + bh * 0.38);
@@ -323,25 +576,20 @@ function drawCarFront(x, y, w, h, type, color) {
   ctx.closePath();
   ctx.fill();
 
-  // Фары
   ctx.fillStyle = '#fffee0';
   ctx.beginPath(); ctx.ellipse(bx + bw * 0.22, by + bh * 0.72, bw * 0.1, bh * 0.06, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(bx + bw * 0.78, by + bh * 0.72, bw * 0.1, bh * 0.06, 0, 0, Math.PI * 2); ctx.fill();
 
-  // Свет от фар
   ctx.fillStyle = 'rgba(255,255,200,0.06)';
   ctx.beginPath(); ctx.moveTo(bx + bw * 0.12, by + bh * 0.75); ctx.lineTo(bx + bw * 0.32, by + bh * 0.75); ctx.lineTo(bx + bw * 0.5, by + bh * 1.5); ctx.lineTo(bx - bw * 0.1, by + bh * 1.5); ctx.closePath(); ctx.fill();
   ctx.beginPath(); ctx.moveTo(bx + bw * 0.68, by + bh * 0.75); ctx.lineTo(bx + bw * 0.88, by + bh * 0.75); ctx.lineTo(bx + bw * 1.1, by + bh * 1.5); ctx.lineTo(bx + bw * 0.5, by + bh * 1.5); ctx.closePath(); ctx.fill();
 
-  // Решётка
   ctx.fillStyle = '#222';
   ctx.fillRect(bx + bw * 0.35, by + bh * 0.82, bw * 0.3, bh * 0.08);
 
-  // Бампер
   ctx.fillStyle = shadeColor(color, -30);
   ctx.fillRect(bx + bw * 0.05, by + bh * 0.88, bw * 0.9, bh * 0.1);
 
-  // Номер
   ctx.fillStyle = '#fff';
   ctx.fillRect(bx + bw * 0.38, by + bh * 0.9, bw * 0.24, bh * 0.06);
   ctx.fillStyle = '#000';
@@ -430,6 +678,13 @@ function handleCrash() {
   }
   var overlay = document.getElementById('crash-overlay');
   if (overlay) { overlay.classList.add('active'); setTimeout(function() { overlay.classList.remove('active'); }, 800); }
+
+  // Звук и вибрация
+  playSound('crash');
+  vibrate([50, 100, 50]);
+
+  // Сохраняем прогресс
+  saveCloudProgress();
 }
 
 // === ОБНОВЛЕНИЕ ===
@@ -510,12 +765,24 @@ function startGame() {
   rotateWheel(0);
   showScreen('game');
   resizeCanvas();
+
+  // Сообщаем платформе, что игра началась
+  if (ysdk && isYaGames) {
+    ysdk.features.GameplayAPI.start();
+  }
+
   requestAnimationFrame(gameLoop);
   setTimeout(function() { isStarting = false; }, 500);
 }
 
 function endLap() {
   game.isRunning = false;
+
+  // Сообщаем платформе, что игра закончилась
+  if (ysdk && isYaGames) {
+    ysdk.features.GameplayAPI.stop();
+  }
+
   var finalPrice = calculatePrice(game.cityCoef, game.powerCoef, game.currentClass);
   var diff = finalPrice - game.startPrice;
   var rank;
@@ -531,8 +798,12 @@ function endLap() {
   else msg = 'Катастрофа! ' + game.crashes + ' аварий. Полис подорожал на ' + formatPrice(diff) + '.';
   game.gamesPlayed++;
   var score = game.startPrice - finalPrice;
-  if (score > game.bestScore) game.bestScore = score;
-  saveProgress();
+  if (score > game.bestScore) {
+    game.bestScore = score;
+    // Отправляем рекорд в таблицу лидеров
+    setLeaderboardScore(score);
+  }
+  saveCloudProgress();
   document.getElementById('res-start').textContent = formatPrice(game.startPrice);
   document.getElementById('res-crashes').textContent = game.crashes;
   document.getElementById('res-class').textContent = game.currentClass + ' (КБМ: ' + game.currentKBM + ')';
@@ -543,6 +814,11 @@ function endLap() {
   document.getElementById('res-total').textContent = game.gamesPlayed;
   document.getElementById('res-kbm').textContent = game.currentClass;
   showScreen('result');
+
+  // Показываем рекламу между заездами
+  setTimeout(function() {
+    showFullscreenAd();
+  }, 1500);
 }
 
 function nextLap() {
@@ -550,26 +826,6 @@ function nextLap() {
   else { game.lap = 1; game.currentClass = 3; game.currentKBM = 1.0; showScreen('form'); updateStats(); }
 }
 
-// === СОХРАНЕНИЕ ===
-function saveProgress() {
-  try {
-    localStorage.setItem('umny_voditel_progress', JSON.stringify({
-      bestScore: game.bestScore, gamesPlayed: game.gamesPlayed,
-      totalCrashes: game.totalCrashes, ownedCars: game.ownedCars,
-      activeCar: game.activeCar, hasVIP: game.hasVIP
-    }));
-  } catch(e) {}
-}
-function loadProgress() {
-  try {
-    var d = JSON.parse(localStorage.getItem('umny_voditel_progress'));
-    if (d) {
-      game.bestScore = d.bestScore || 0; game.gamesPlayed = d.gamesPlayed || 0;
-      game.totalCrashes = d.totalCrashes || 0; game.ownedCars = d.ownedCars || ['default'];
-      game.activeCar = d.activeCar || 'default'; game.hasVIP = d.hasVIP || false;
-    }
-  } catch(e) {}
-}
 function updateStats() {
   var best = document.getElementById('stat-best');
   var games = document.getElementById('stat-games');
@@ -603,37 +859,92 @@ document.addEventListener('keyup', function(e) {
   else if (e.key === 'ArrowUp') keyFaster = false;
   else if (e.key === 'ArrowDown') keySlower = false;
 });
+
+// Тач-зоны для поворотов
 document.getElementById('touch-left').addEventListener('touchstart', function(e) { e.preventDefault(); keyLeft = true; });
 document.getElementById('touch-left').addEventListener('touchend', function(e) { e.preventDefault(); keyLeft = false; });
 document.getElementById('touch-right').addEventListener('touchstart', function(e) { e.preventDefault(); keyRight = true; });
 document.getElementById('touch-right').addEventListener('touchend', function(e) { e.preventDefault(); keyRight = false; });
 
+// Мобильное управление газ/тормоз
+var btnGas = document.getElementById('btn-gas');
+var btnBrake = document.getElementById('btn-brake');
+
+if (btnGas) {
+  btnGas.addEventListener('touchstart', function(e) { e.preventDefault(); e.stopPropagation(); keyFaster = true; });
+  btnGas.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); keyFaster = false; });
+  btnGas.addEventListener('mousedown', function(e) { e.preventDefault(); keyFaster = true; });
+  btnGas.addEventListener('mouseup', function(e) { e.preventDefault(); keyFaster = false; });
+}
+
+if (btnBrake) {
+  btnBrake.addEventListener('touchstart', function(e) { e.preventDefault(); e.stopPropagation(); keySlower = true; });
+  btnBrake.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); keySlower = false; });
+  btnBrake.addEventListener('mousedown', function(e) { e.preventDefault(); keySlower = true; });
+  btnBrake.addEventListener('mouseup', function(e) { e.preventDefault(); keySlower = false; });
+}
+
 // === КНОПКИ ===
 document.getElementById('city').addEventListener('change', updateStats);
 document.getElementById('power').addEventListener('change', updateStats);
-document.getElementById('btn-start').addEventListener('click', startGame);
-document.getElementById('btn-next').addEventListener('click', nextLap);
-document.getElementById('btn-menu').addEventListener('click', function() { showScreen('form'); updateStats(); });
-document.getElementById('btn-shop').addEventListener('click', function() { showScreen('shop'); });
-document.getElementById('btn-shop-back').addEventListener('click', function() { showScreen('form'); });
-document.getElementById('btn-resume').addEventListener('click', function() { game.isPaused = false; showScreen('game'); lastTime = 0; requestAnimationFrame(gameLoop); });
-document.getElementById('btn-quit').addEventListener('click', function() { game.isRunning = false; showScreen('form'); updateStats(); });
+document.getElementById('btn-start').addEventListener('click', function() { playSound('click'); startGame(); });
+document.getElementById('btn-next').addEventListener('click', function() { playSound('click'); nextLap(); });
+document.getElementById('btn-menu').addEventListener('click', function() { playSound('click'); showScreen('form'); updateStats(); });
+document.getElementById('btn-shop').addEventListener('click', function() { playSound('click'); showScreen('shop'); });
+document.getElementById('btn-shop-back').addEventListener('click', function() { playSound('click'); showScreen('form'); });
+document.getElementById('btn-resume').addEventListener('click', function() { playSound('click'); game.isPaused = false; showScreen('game'); lastTime = 0; requestAnimationFrame(gameLoop); });
+document.getElementById('btn-quit').addEventListener('click', function() { playSound('click'); game.isRunning = false; showScreen('form'); updateStats(); });
+
 document.getElementById('btn-leaderboard').addEventListener('click', function() {
-  if (vkBridgeReady) { vkBridge.send('VKWebAppShowLeaderBoardBox', {user_result: game.bestScore}).catch(function(){}); }
-  else { showToast('🏆 Только в VK'); }
+  playSound('click');
+  showLeaderboard();
 });
+
 document.getElementById('btn-invite').addEventListener('click', function() {
-  if (vkBridgeReady) { vkBridge.send('VKWebAppInvite', {}).catch(function(){}); }
-  else { showToast('👥 Только в VK'); }
+  playSound('click');
+  if (ysdk && isYaGames) {
+    // В Яндекс.Играх используем поделиться
+    ysdk.shortcut.showPrompt().then(function(result) {
+      if (result.outcome === 'accepted') {
+        showToast('👥 Ярлык добавлен на рабочий стол');
+      }
+    }).catch(function() {
+      showToast('👥 Поделитесь игрой с друзьями!');
+    });
+  } else {
+    showToast('👥 Поделитесь игрой с друзьями!');
+  }
 });
+
 document.getElementById('btn-donate').addEventListener('click', function() {
-  window.open('https://www.donationalerts.com/r/umnyvoditel', '_blank');
+  playSound('click');
+  if (ysdk && isYaGames) {
+    // В Яндекс.Игры — внутриигровые покупки
+    showToast('💝 Внутриигровые покупки скоро будут доступны');
+  } else {
+    showToast('💝 Поддержка разработчика — внутриигровые покупки');
+  }
 });
+
 document.getElementById('btn-share').addEventListener('click', function() {
+  playSound('click');
   var text = '🚗 Умный водитель с ОСАГО 3D\n🏆 Ранг: ' + document.getElementById('res-rank').textContent + '\n💰 Полис: ' + document.getElementById('res-price').textContent + '\n\nСможешь лучше?';
-  if (vkBridgeReady) { vkBridge.send('VKWebAppShowWallPostBox', {message: text}).catch(function(){}); }
-  else { navigator.clipboard.writeText(text).then(function() { showToast('📋 Скопировано!'); }).catch(function(){}); }
+  if (ysdk && isYaGames) {
+    ysdk.share({ message: text }).catch(function() {
+      fallbackShare(text);
+    });
+  } else {
+    fallbackShare(text);
+  }
 });
+
+function fallbackShare(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { showToast('📋 Скопировано!'); }).catch(function(){});
+  } else {
+    showToast('📋 Поделитесь результатом с друзьями!');
+  }
+}
 
 // === CANVAS ===
 function resizeCanvas() {
@@ -657,8 +968,8 @@ function showToast(msg) {
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 function bootstrap() {
-  loadProgress();
-  initVK();
+  loadLocalProgress();
+  initAudio();
   createRoad();
   resizeCanvas();
   updateStats();
@@ -667,8 +978,23 @@ function bootstrap() {
   console.log('✅ Умный водитель с ОСАГО загружен. Сегментов: ' + segments.length + ', время: ~' + Math.round(game.trackLength / MAX_SPEED) + 'сек');
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() { setTimeout(bootstrap, 100); });
+// Запускаем через YaGames SDK, если доступен
+if (typeof YaGames !== 'undefined') {
+  initYaGames();
 } else {
-  setTimeout(bootstrap, 100);
+  // Локальный режим разработки
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(bootstrap, 100); });
+  } else {
+    setTimeout(bootstrap, 100);
+  }
 }
+
+// Обработка visibilitychange — пауза при сворачивании
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden && game.isRunning && !game.isPaused) {
+    game.isPaused = true;
+    showScreen('pause');
+    console.log('⏸️ Вкладка скрыта — игра на паузе');
+  }
+});
