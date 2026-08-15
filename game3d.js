@@ -22,7 +22,7 @@ var game = {
   bestScore:0, gamesPlayed:0,
   landscape:'forest', ownedCars:['default'],
   activeCar:'default', activeDashboard:'niva', hasVIP:false, hasShield:false, shieldActive:false, shieldTime:0,
-  soundEnabled:true
+  soundEnabled:true, trackIndex:0
 };
 
 // === ТАБЛИЦА КБМ ===
@@ -91,7 +91,7 @@ function saveCloudProgress(){
   return player.setData({
     version:'2.5',bestScore:game.bestScore,gamesPlayed:game.gamesPlayed,totalCrashes:game.totalCrashes,
     ownedCars:game.ownedCars,activeCar:game.activeCar,activeDashboard:game.activeDashboard,hasVIP:game.hasVIP,
-    currentClass:game.currentClass,currentKBM:game.currentKBM
+    currentClass:game.currentClass,currentKBM:game.currentKBM,trackIndex:game.trackIndex
   }).catch(function(){ saveLocalProgress(); });
 }
 function loadCloudProgress(){
@@ -107,6 +107,12 @@ function loadCloudProgress(){
       }
       game.bestScore=d.bestScore||0; game.gamesPlayed=d.gamesPlayed||0; game.totalCrashes=d.totalCrashes||0;
       game.ownedCars=d.ownedCars||['default']; game.activeCar=d.activeCar||'default'; game.activeDashboard=d.activeDashboard||'niva'; game.hasVIP=d.hasVIP||false;
+      game.trackIndex=d.trackIndex||0;
+      var trackEl=document.getElementById('track');
+      if(trackEl) trackEl.value=game.trackIndex;
+      game.trackIndex=d.trackIndex||0;
+      var trackEl=document.getElementById('track');
+      if(trackEl) trackEl.value=game.trackIndex;
     } else loadLocalProgress();
   }).catch(function(){ loadLocalProgress(); });
 }
@@ -114,7 +120,7 @@ function saveLocalProgress(){
   try{ localStorage.setItem('umny_voditel_progress', JSON.stringify({
     version:'2.5',bestScore:game.bestScore,gamesPlayed:game.gamesPlayed,totalCrashes:game.totalCrashes,
     ownedCars:game.ownedCars,activeCar:game.activeCar,activeDashboard:game.activeDashboard,hasVIP:game.hasVIP,
-    currentClass:game.currentClass,currentKBM:game.currentKBM
+    currentClass:game.currentClass,currentKBM:game.currentKBM,trackIndex:game.trackIndex
   }));}catch(e){}
 }
 function loadLocalProgress(){
@@ -130,6 +136,12 @@ function loadLocalProgress(){
       }
       game.bestScore=d.bestScore||0; game.gamesPlayed=d.gamesPlayed||0; game.totalCrashes=d.totalCrashes||0;
       game.ownedCars=d.ownedCars||['default']; game.activeCar=d.activeCar||'default'; game.activeDashboard=d.activeDashboard||'niva'; game.hasVIP=d.hasVIP||false;
+      game.trackIndex=d.trackIndex||0;
+      var trackEl=document.getElementById('track');
+      if(trackEl) trackEl.value=game.trackIndex;
+      game.trackIndex=d.trackIndex||0;
+      var trackEl=document.getElementById('track');
+      if(trackEl) trackEl.value=game.trackIndex;
     }
   }catch(e){}
 }
@@ -278,8 +290,37 @@ function randomChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function percentRemaining(n,total){ return (n%total)/total; }
 function interpolate(a,b,p){ return a+(b-a)*p; }
 
+// === ТРЕКИ ===
+var TRACKS=[
+  {
+    name:'Лесная трасса',difficulty:'Лёгкий',length:800,
+    landscapes:[{start:0,type:'forest'},{start:0.55,type:'field'}],
+    curves:function(n,total){ return Math.sin(n/28)*1.6; },
+    hills:function(n,total){ return Math.sin(n/18)*400; },
+    obstacles:10,
+    obstacleTypes:['sedan','taxi','truck','roadwork']
+  },
+  {
+    name:'Городское кольцо',difficulty:'Средний',length:1000,
+    landscapes:[{start:0,type:'city'}],
+    curves:function(n,total){ return (n%55<28?2.8:-2.8); },
+    hills:function(n,total){ return Math.sin(n/35)*80; },
+    obstacles:15,
+    obstacleTypes:['sedan','taxi','police','truck','roadwork']
+  },
+  {
+    name:'Горный серпантин',difficulty:'Сложный',length:1200,
+    landscapes:[{start:0,type:'field'},{start:0.45,type:'forest'}],
+    curves:function(n,total){ return Math.sin(n/9)*4.2; },
+    hills:function(n,total){ return Math.sin(n/7)*900; },
+    obstacles:20,
+    obstacleTypes:['sedan','taxi','truck','roadwork']
+  }
+];
+
 // === ДОРОГА ===
-function createRoad(){
+function createRoad(trackIdx){
+  var track=TRACKS[trackIdx||0];
   segments=[];
   function addSegment(curve,y){
     var n=segments.length;
@@ -294,24 +335,25 @@ function createRoad(){
     });
   }
   function lastY(){ return segments.length===0?0:segments[segments.length-1].p2.world.y; }
-  for(var n=0;n<100;n++) addSegment(0,0);
-  for(n=0;n<700;n++) addSegment(Math.sin(n/30)*2, Math.sin(n/20)*500);
-  for(n=0;n<80;n++) addSegment(0,lastY());
-  for(n=0;n<700;n++) addSegment(Math.sin(n/40)*3, 0);
-  for(n=0;n<80;n++) addSegment(0,lastY());
-  for(n=0;n<700;n++) addSegment((n%80<40?2:-2), 0);
-  for(n=0;n<200;n++) addSegment(0,0);
+  // Стартовая прямая
+  for(var n=0;n<80;n++) addSegment(0,0);
+  // Основная часть трека
+  for(n=0;n<track.length;n++){
+    addSegment(track.curves(n,track.length), track.hills(n,track.length));
+  }
+  // Финишная прямая
+  for(n=0;n<150;n++) addSegment(0,lastY());
   game.trackLength = segments.length*SEGMENT_LENGTH;
 
   var laneOffsets=[-0.55,0,0.55];
   var carColors=['#cc2222','#eeeeee','#2222cc','#ccaa22','#888888'];
-  var step=Math.floor((segments.length-300)/15);
-  for(n=0;n<15;n++){
-    var idx=150+n*step+randomInt(-20,20);
-    idx=limit(idx,100,segments.length-200);
+  var step=Math.floor((segments.length-250)/track.obstacles);
+  for(n=0;n<track.obstacles;n++){
+    var idx=120+n*step+randomInt(-15,15);
+    idx=limit(idx,100,segments.length-150);
     if(segments[idx].sprites.length>0) continue;
     segments[idx].sprites.push({
-      type: randomChoice(['sedan','taxi','police','truck','roadwork']),
+      type: randomChoice(track.obstacleTypes),
       offset: randomChoice(laneOffsets),
       color: randomChoice(carColors)
     });
@@ -662,11 +704,11 @@ function update(dt){
   game.playerX=limit(game.playerX,-2,2);
   game.speed=limit(game.speed,0,MAX_SPEED);
   game.distance+=(game.speed*dt);
+  var track=TRACKS[game.trackIndex||0];
   var progress=game.distance/game.trackLength;
-  if(progress<0.25) game.landscape='forest';
-  else if(progress<0.5) game.landscape='field';
-  else if(progress<0.75) game.landscape='city';
-  else game.landscape='forest';
+  for(var i=track.landscapes.length-1;i>=0;i--){
+    if(progress>=track.landscapes[i].start){ game.landscape=track.landscapes[i].type; break; }
+  }
   var elDist=document.getElementById('hud-dist');
   if(elDist) elDist.textContent=Math.max(0,Math.round((game.trackLength-game.distance)/100))+'м';
   if(game.distance>=game.trackLength) endLap();
@@ -998,6 +1040,7 @@ function startGame(){
   if(isStarting) return; isStarting=true;
   game.cityCoef=parseFloat(document.getElementById('city').value);
   game.powerCoef=parseFloat(document.getElementById('power').value);
+  game.trackIndex=parseInt(document.getElementById('track').value)||0;
   if(game.lap===1){
     game.currentClass=3; game.currentKBM=1.0;
     game.seasonBasePrice=calculatePrice(game.cityCoef,game.powerCoef,3);
@@ -1017,6 +1060,7 @@ function startGame(){
   if(havalWrap) havalWrap.style.display=(game.activeDashboard==='haval'?'block':'none');
   if(toyotaWrap) toyotaWrap.style.display=(game.activeDashboard==='toyota'?'block':'none');
   lastCrashSeg=-1; lastTime=0;
+  createRoad(game.trackIndex);
   for(var n=0;n<segments.length;n++){
     if(segments[n].originalSprites) segments[n].sprites=segments[n].originalSprites.slice();
   }
@@ -1129,13 +1173,19 @@ function updateStats(){
   if(kbm) kbm.textContent=game.currentClass;
   var cityEl=document.getElementById('city');
   var powerEl=document.getElementById('power');
+  var trackEl=document.getElementById('track');
   var city=cityEl?parseFloat(cityEl.value):1.64;
   var power=powerEl?parseFloat(powerEl.value):1.1;
+  var trackIdx=trackEl?parseInt(trackEl.value)||0:0;
   if(isNaN(city)) city=1.64;
   if(isNaN(power)) power=1.1;
   var price=calculatePrice(city,power,game.currentClass);
   var preview=document.getElementById('preview-price');
   if(preview) preview.textContent=isNaN(price)?'—':formatPrice(price);
+  // Инфо о треке
+  var track=TRACKS[trackIdx];
+  var trackInfo=document.getElementById('track-info');
+  if(trackInfo) trackInfo.innerHTML='<span>🏁 '+track.name+'</span><span>'+track.difficulty+' · '+(Math.round((track.length+230)*SEGMENT_LENGTH/100))+'м</span>';
 }
 
 // === УПРАВЛЕНИЕ ===
@@ -1245,6 +1295,8 @@ var btnShare=document.getElementById('btn-share');
 
 if(cityEl) cityEl.addEventListener('change',updateStats);
 if(powerEl) powerEl.addEventListener('change',updateStats);
+var trackEl=document.getElementById('track');
+if(trackEl) trackEl.addEventListener('change',updateStats);
 if(btnStart) btnStart.addEventListener('click',function(){ ensureAudio(); playSound('click'); if(shouldShowTutorial()){ showScreen('tutorial'); }else{ startGame(); } });
 if(btnNext) btnNext.addEventListener('click',function(){ playSound('click'); nextLap(); });
 if(btnMenu) btnMenu.addEventListener('click',function(){ playSound('click'); showScreen('form'); updateStats(); });
@@ -1297,7 +1349,7 @@ function showToast(msg){
 
 function bootstrap(){
   loadLocalProgress(); loadSoundSetting();
-  createRoad(); resizeCanvas(); updateStats();
+  createRoad(0); resizeCanvas(); updateStats();
   if(loadSessionProgress()){
     showToast('Сезон продолжается! Заезд '+game.lap+'/10, класс '+game.currentClass);
   }
