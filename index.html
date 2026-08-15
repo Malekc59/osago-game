@@ -128,11 +128,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
 .btn-buy:disabled { opacity:0.5; cursor:not-allowed; }
 .btn-sound { position:absolute; top:8px; right:8px; width:36px; height:36px; border-radius:50%; border:1px solid rgba(0,240,255,0.3); background:rgba(0,240,255,0.08); color:#00f0ff; font-size:1.1rem; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; pointer-events:auto; }
 .btn-sound:active { background:rgba(0,240,255,0.2); }
-#dashboard-wrap, #dashboard-wrap-bmw { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:520px; z-index:15; pointer-events:none; }
-#dashboard-img, #dashboard-img-bmw { width:100%; height:auto; display:block; border-radius:8px 8px 0 0; object-fit:cover; object-position:top; }
-#speedo-canvas, #speedo-canvas-bmw { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
-@media (max-height:700px) { #dashboard-wrap, #dashboard-wrap-bmw { max-width:420px; } }
-@media (max-height:600px) { #dashboard-wrap, #dashboard-wrap-bmw { max-width:340px; } }
+#dashboard-wrap, #dashboard-wrap-bmw, #dashboard-wrap-haval, #dashboard-wrap-toyota { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:520px; z-index:15; pointer-events:none; }
+#dashboard-img, #dashboard-img-bmw, #dashboard-img-haval, #dashboard-img-toyota { width:100%; height:auto; display:block; border-radius:8px 8px 0 0; object-fit:cover; object-position:top; }
+#speedo-canvas, #speedo-canvas-bmw, #speedo-canvas-haval, #speedo-canvas-toyota { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+@media (max-height:700px) { #dashboard-wrap, #dashboard-wrap-bmw, #dashboard-wrap-haval, #dashboard-wrap-toyota { max-width:420px; } }
+@media (max-height:600px) { #dashboard-wrap, #dashboard-wrap-bmw, #dashboard-wrap-haval, #dashboard-wrap-toyota { max-width:340px; } }
 
 /* Toast */
 @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
@@ -208,6 +208,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
   <div id="dashboard-wrap-bmw" class="dashboard-bmw" style="display:none;">
     <img id="dashboard-img-bmw" src="dash_bmw.png" alt="Приборная панель BMW">
     <canvas id="speedo-canvas-bmw"></canvas>
+  </div>
+  <div id="dashboard-wrap-haval" class="dashboard-haval" style="display:none;">
+    <img id="dashboard-img-haval" src="dash_haval.png" alt="Приборная панель Haval">
+    <canvas id="speedo-canvas-haval"></canvas>
+  </div>
+  <div id="dashboard-wrap-toyota" class="dashboard-toyota" style="display:none;">
+    <img id="dashboard-img-toyota" src="dash_toyota.png" alt="Приборная панель Toyota">
+    <canvas id="speedo-canvas-toyota"></canvas>
   </div>
   <div id="touch-left" class="touch-zone"></div>
   <div id="touch-right" class="touch-zone"></div>

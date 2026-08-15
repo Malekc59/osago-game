@@ -673,6 +673,8 @@ function update(dt){
 }
 function renderSpeedometer(){
   if(game.activeDashboard==='bmw') renderSpeedometerBMW();
+  else if(game.activeDashboard==='haval') renderSpeedometerHaval();
+  else if(game.activeDashboard==='toyota') renderSpeedometerToyota();
   else renderSpeedometerNiva();
 }
 function renderSpeedometerNiva(){
@@ -737,6 +739,94 @@ function renderSpeedometerBMW(){
   s.fillStyle='rgba(255,255,255,0.1)'; s.fillRect(cx-barW/2,cy-Math.min(Ws,Hs)*0.18,barW,barH);
   var progress=Math.min(1,game.speed/MAX_SPEED);
   s.fillStyle='#00f0ff'; s.fillRect(cx-barW/2,cy-Math.min(Ws,Hs)*0.18,barW*progress,barH);
+}
+function renderSpeedometerHaval(){
+  var c=document.getElementById('speedo-canvas-haval');
+  var wrap=document.getElementById('dashboard-wrap-haval');
+  if(!c||!wrap) return;
+  var Ws=c.width=wrap.offsetWidth;
+  var Hs=c.height=wrap.offsetHeight;
+  var s=c.getContext('2d');
+  s.clearRect(0,0,Ws,Hs);
+  var speedKmh=Math.round((game.speed/MAX_SPEED)*220);
+  // Haval: спидометр правее центра (как в реальной Jolion)
+  var cx=Ws*0.62, cy=Hs*0.30;
+  var r=Math.min(Ws,Hs)*0.14;
+  // Фон циферблата
+  s.beginPath(); s.arc(cx,cy,r,0,Math.PI*2); s.fillStyle='rgba(0,0,0,0.75)'; s.fill();
+  s.beginPath(); s.arc(cx,cy,r*0.90,0,Math.PI*2); s.strokeStyle='#444'; s.lineWidth=2; s.stroke();
+  // Шкала
+  for(var i=0;i<=22;i++){
+    var ang=(Math.PI*0.8)+(Math.PI*1.4)*(i/22);
+    var len=(i%2===0)?r*0.12:r*0.06;
+    var x1=cx+Math.cos(ang)*(r*0.78), y1=cy+Math.sin(ang)*(r*0.78);
+    var x2=cx+Math.cos(ang)*(r*0.78-len), y2=cy+Math.sin(ang)*(r*0.78-len);
+    s.beginPath(); s.moveTo(x1,y1); s.lineTo(x2,y2); s.strokeStyle=(i%2===0)?'#ff3333':'#666'; s.lineWidth=(i%2===0)?2:1; s.stroke();
+  }
+  // Цифры
+  s.fillStyle='#fff'; s.font='bold '+(r*0.16)+'px Arial'; s.textAlign='center'; s.textBaseline='middle';
+  for(var i=0;i<=4;i++){
+    var ang=(Math.PI*0.8)+(Math.PI*1.4)*(i/4);
+    var val=i*60;
+    var tx=cx+Math.cos(ang)*(r*0.55), ty=cy+Math.sin(ang)*(r*0.55);
+    s.fillText(val,tx,ty);
+  }
+  // Стрелка
+  var needleAng=(Math.PI*0.8)+(Math.PI*1.4)*Math.min(1,game.speed/MAX_SPEED);
+  var nx=cx+Math.cos(needleAng)*(r*0.65);
+  var ny=cy+Math.sin(needleAng)*(r*0.65);
+  s.beginPath(); s.moveTo(cx,cy); s.lineTo(nx,ny); s.strokeStyle='#ff3333'; s.lineWidth=3; s.lineCap='round'; s.stroke();
+  s.beginPath(); s.arc(cx,cy,r*0.07,0,Math.PI*2); s.fillStyle='#ff3333'; s.fill();
+  // Цифровой дисплей
+  s.fillStyle='#00f0ff'; s.font='bold '+(r*0.22)+'px Arial';
+  s.fillText(speedKmh,cx,cy+r*0.38);
+  s.fillStyle='#888'; s.font=(r*0.09)+'px Arial';
+  s.fillText('км/ч',cx,cy+r*0.55);
+}
+
+function renderSpeedometerToyota(){
+  var c=document.getElementById('speedo-canvas-toyota');
+  var wrap=document.getElementById('dashboard-wrap-toyota');
+  if(!c||!wrap) return;
+  var Ws=c.width=wrap.offsetWidth;
+  var Hs=c.height=wrap.offsetHeight;
+  var s=c.getContext('2d');
+  s.clearRect(0,0,Ws,Hs);
+  var speedKmh=Math.round((game.speed/MAX_SPEED)*220);
+  // Toyota: классический круглый спидометр по центру
+  var cx=Ws*0.50, cy=Hs*0.28;
+  var r=Math.min(Ws,Hs)*0.13;
+  // Фон
+  s.beginPath(); s.arc(cx,cy,r,Math.PI*0.75,Math.PI*2.25); s.strokeStyle='rgba(0,0,0,0.6)'; s.lineWidth=r*0.15; s.stroke();
+  s.beginPath(); s.arc(cx,cy,r*0.92,Math.PI*0.75,Math.PI*2.25); s.strokeStyle='#1a1a2e'; s.lineWidth=r*0.08; s.stroke();
+  // Шкала
+  for(var i=0;i<=20;i++){
+    var ang=Math.PI*0.75+(Math.PI*1.5)*(i/20);
+    var len=(i%5===0)?r*0.18:r*0.1;
+    var x1=cx+Math.cos(ang)*(r*0.78), y1=cy+Math.sin(ang)*(r*0.78);
+    var x2=cx+Math.cos(ang)*(r*0.78-len), y2=cy+Math.sin(ang)*(r*0.78-len);
+    s.beginPath(); s.moveTo(x1,y1); s.lineTo(x2,y2); s.strokeStyle=(i%5===0)?'#ff3333':'#888'; s.lineWidth=(i%5===0)?2:1; s.stroke();
+  }
+  // Цифры
+  s.fillStyle='#fff'; s.font='bold '+(r*0.18)+'px Arial'; s.textAlign='center'; s.textBaseline='middle';
+  for(var i=0;i<=4;i++){
+    var ang=Math.PI*0.75+(Math.PI*1.5)*(i/4);
+    var val=i*60;
+    var tx=cx+Math.cos(ang)*(r*0.55), ty=cy+Math.sin(ang)*(r*0.55);
+    s.fillText(val,tx,ty);
+  }
+  // Стрелка
+  var needleAng=Math.PI*0.75+(Math.PI*1.5)*Math.min(1,game.speed/MAX_SPEED);
+  var nx=cx+Math.cos(needleAng)*(r*0.65);
+  var ny=cy+Math.sin(needleAng)*(r*0.65);
+  s.beginPath(); s.moveTo(cx,cy); s.lineTo(nx,ny); s.strokeStyle='#ff3333'; s.lineWidth=3; s.lineCap='round'; s.stroke();
+  s.beginPath(); s.arc(cx,cy,r*0.08,0,Math.PI*2); s.fillStyle='#ff3333'; s.fill();
+  s.beginPath(); s.arc(cx,cy,r*0.04,0,Math.PI*2); s.fillStyle='#fff'; s.fill();
+  // Цифровой дисплей
+  s.fillStyle='#00f0ff'; s.font='bold '+(r*0.22)+'px Arial';
+  s.fillText(speedKmh,cx,cy+r*0.35);
+  s.fillStyle='#888'; s.font=(r*0.1)+'px Arial';
+  s.fillText('км/ч',cx,cy+r*0.52);
 }
 
 // === gameLoop с защитой от падения ===
@@ -870,8 +960,12 @@ function startGame(){
   // Панель приборов
   var nivaWrap=document.getElementById('dashboard-wrap');
   var bmwWrap=document.getElementById('dashboard-wrap-bmw');
+  var havalWrap=document.getElementById('dashboard-wrap-haval');
+  var toyotaWrap=document.getElementById('dashboard-wrap-toyota');
   if(nivaWrap) nivaWrap.style.display=(game.activeDashboard==='niva'?'block':'none');
   if(bmwWrap) bmwWrap.style.display=(game.activeDashboard==='bmw'?'block':'none');
+  if(havalWrap) havalWrap.style.display=(game.activeDashboard==='haval'?'block':'none');
+  if(toyotaWrap) toyotaWrap.style.display=(game.activeDashboard==='toyota'?'block':'none');
   lastCrashSeg=-1; lastTime=0;
   for(var n=0;n<segments.length;n++){
     if(segments[n].originalSprites) segments[n].sprites=segments[n].originalSprites.slice();
@@ -1042,7 +1136,7 @@ document.querySelectorAll('.btn-buy').forEach(function(btn){
     var onSuccess=function(){
       if(pid==='shield_30sec'){ game.hasShield=true; showToast('Щит активирован на следующий заезд!'); }
       else if(pid==='undo_crash'){ showToast('Второй шанс куплен! Используется автоматически.'); }
-      else if(pid.indexOf('car_')===0){ var carName=pid.replace('car_',''); if(game.ownedCars.indexOf(carName)===-1) game.ownedCars.push(carName); if(carName==='bmw'){ game.activeDashboard='bmw'; game.activeCar='bmw'; } showToast('Тачка добавлена в гараж!'); }
+      else if(pid.indexOf('car_')===0){ var carName=pid.replace('car_',''); if(game.ownedCars.indexOf(carName)===-1) game.ownedCars.push(carName); if(carName==='bmw'){ game.activeDashboard='bmw'; game.activeCar='bmw'; } else if(carName==='haval'){ game.activeDashboard='haval'; game.activeCar='haval'; } else if(carName==='sequoia'){ game.activeDashboard='toyota'; game.activeCar='sequoia'; } showToast('Тачка добавлена в гараж!'); }
       else if(pid==='vip_month'){ game.hasVIP=true; showToast('VIP активирован!'); }
     };
     buyProduct(pid,onSuccess);
