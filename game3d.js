@@ -928,6 +928,56 @@ function consumePurchase(purchase){
   return payments.consumePurchase(purchase.purchaseToken).catch(function(e){ console.warn('Consume error:',e); });
 }
 
+
+// === ЛАЙТБОКС ДЛЯ ФОТО МАШИН ===
+var lightboxImages = [];
+var lightboxIndex = 0;
+
+function openLightbox(images, index){
+  lightboxImages = images;
+  lightboxIndex = index;
+  var overlay = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var counter = document.getElementById('lightbox-counter');
+  if(!overlay || !img) return;
+  img.src = images[index];
+  counter.textContent = (index + 1) + ' / ' + images.length;
+  overlay.classList.add('active');
+}
+function closeLightbox(){
+  var overlay = document.getElementById('lightbox');
+  if(overlay) overlay.classList.remove('active');
+  lightboxImages = [];
+  lightboxIndex = 0;
+}
+function lightboxPrev(){
+  if(lightboxImages.length === 0) return;
+  lightboxIndex = (lightboxIndex - 1 + lightboxImages.length) % lightboxImages.length;
+  document.getElementById('lightbox-img').src = lightboxImages[lightboxIndex];
+  document.getElementById('lightbox-counter').textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+}
+function lightboxNext(){
+  if(lightboxImages.length === 0) return;
+  lightboxIndex = (lightboxIndex + 1) % lightboxImages.length;
+  document.getElementById('lightbox-img').src = lightboxImages[lightboxIndex];
+  document.getElementById('lightbox-counter').textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+}
+// Закрытие по клику на фон
+var lightboxOverlay = document.getElementById('lightbox');
+if(lightboxOverlay){
+  lightboxOverlay.addEventListener('click', function(e){
+    if(e.target === lightboxOverlay) closeLightbox();
+  });
+}
+// Клавиши
+var lightboxKeys = function(e){
+  var overlay = document.getElementById('lightbox');
+  if(!overlay || !overlay.classList.contains('active')) return;
+  if(e.key === 'Escape') closeLightbox();
+  else if(e.key === 'ArrowLeft') lightboxPrev();
+  else if(e.key === 'ArrowRight') lightboxNext();
+};
+
 function showScreen(name){
   var screens=['screen-loading','screen-form','screen-game','screen-pause','screen-result','screen-shop','screen-tutorial'];
   screens.forEach(function(s){ var el=document.getElementById(s); if(el) el.classList.remove('active'); });
@@ -1126,6 +1176,21 @@ var btnTutorialSkip=document.getElementById('btn-tutorial-skip');
 if(btnTutorialStart) btnTutorialStart.addEventListener('click',function(){ playSound('click'); markTutorialShown(); startGame(); });
 if(btnTutorialSkip) btnTutorialSkip.addEventListener('click',function(){ playSound('click'); markTutorialShown(); startGame(); });
 
+// Обработчики клика на фото машин (лайтбокс)
+document.querySelectorAll('.car-card').forEach(function(card){
+  var imgs = card.querySelectorAll('.car-photo img');
+  if(imgs.length === 0) return;
+  var srcs = [];
+  imgs.forEach(function(img){ srcs.push(img.src); });
+  imgs.forEach(function(img, idx){
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function(e){
+      e.stopPropagation();
+      openLightbox(srcs, idx);
+    });
+  });
+});
+
 // Обработчики покупок в магазине
 document.querySelectorAll('.btn-buy').forEach(function(btn){
   btn.addEventListener('click',function(e){
@@ -1253,3 +1318,6 @@ document.addEventListener('visibilitychange',function(){
 window.addEventListener('blur',function(){
   if(game.isRunning&&!game.isPaused){ game.isPaused=true; showScreen('pause'); }
 });
+
+// Лайтбокс клавиши
+document.addEventListener('keydown',lightboxKeys);
