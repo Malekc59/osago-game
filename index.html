@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="Умный водитель с ОСАГО — 3D-аркада про вождение. Снизь КБМ до минимума за 10 заездов!">
 <meta name="theme-color" content="#0a0a12">
-<title>Умный водитель с ОСАГО</title>
+<title>Умный водитель с ОСАГО 3D</title>
 
 <!-- YaGames SDK -->
 <script src="https://yandex.ru/games/sdk/v2"></script>
@@ -34,7 +34,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
 .stats-row span { color:#00f0ff; font-weight:600; }
 .input-group { margin-bottom:14px; }
 .input-group label { display:block; font-size:0.75rem; color:#00f0ff; margin-bottom:5px; font-weight:500; text-transform:uppercase; }
-.input-group select { width:100%; padding:11px 13px; border-radius:13px; border:1px solid rgba(0,240,255,0.2); background:rgba(0,0,0,0.3); color:#e0e0e0; font-size:0.9rem; outline:none; appearance:none; cursor:pointer; }
+.input-group select { width:100%; padding:11px 13px; border-radius:13px; border:1px solid rgba(0,240,255,0.3); background:#0a0a12; color:#ffffff; font-size:0.9rem; outline:none; appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300f0ff' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
 .input-group select:focus { border-color:#00f0ff; box-shadow:0 0 12px rgba(0,240,255,0.15); }
 .price-box { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); border-radius:13px; margin-bottom:15px; }
 #preview-price { font-size:1.2rem; font-weight:700; color:#00ff88; }
@@ -59,7 +59,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
 .hud-value.warning { color:#ff8800; }
 @keyframes pulseRed { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
 
-/* Руль */
+/* Руль — CSS drop-shadow вместо SVG filter */
 #steering-wheel { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:170px; height:170px; z-index:15; pointer-events:none; filter:drop-shadow(0 4px 15px rgba(0,0,0,0.7)); transition:transform 0.15s ease-out; }
 @media (max-height:700px) { #steering-wheel { width:130px; height:130px; bottom:5px; } }
 @media (max-height:600px) { #steering-wheel { width:100px; height:100px; bottom:2px; } }
@@ -108,12 +108,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
 .shop-item-desc { font-size:0.72rem; color:#8888a0; margin-top:2px; }
 .shop-item-price { font-weight:700; color:#00ff88; font-size:0.95rem; white-space:nowrap; }
 
-/* Карточка тачки с фото */
+/* Карточка тачки — inline SVG placeholder, никаких внешних файлов */
 .car-card { background:rgba(255,255,255,0.03); border-radius:16px; padding:14px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.06); }
 .car-card h3 { font-size:1rem; margin-bottom:8px; color:#00f0ff; }
 .car-photos { display:flex; gap:6px; margin-bottom:10px; overflow-x:auto; }
-.car-photo { width:80px; height:55px; background:#1a1a2e; border-radius:8px; object-fit:cover; border:1px solid rgba(0,240,255,0.15); flex-shrink:0; }
-.car-photo.placeholder { display:flex; align-items:center; justify-content:center; color:#555; font-size:0.6rem; text-align:center; padding:4px; }
+.car-photo { width:80px; height:55px; background:#1a1a2e; border-radius:8px; border:1px solid rgba(0,240,255,0.15); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.car-photo svg { width:100%; height:100%; }
 .car-buy-row { display:flex; justify-content:space-between; align-items:center; }
 .car-price { font-weight:700; color:#00ff88; font-size:1.1rem; }
 
@@ -122,9 +122,28 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
 .vip-banner h3 { color:#ffd700; font-size:1.1rem; margin-bottom:4px; }
 .vip-banner p { color:#8888a0; font-size:0.75rem; margin-bottom:10px; }
 .vip-price { font-size:1.3rem; font-weight:700; color:#ffd700; }
+.btn-buy { padding:6px 14px; border:1px solid rgba(0,255,136,0.4); border-radius:10px; background:rgba(0,255,136,0.1); color:#00ff88; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+.btn-buy:hover { background:rgba(0,255,136,0.2); transform:translateY(-1px); }
+.btn-buy:active { transform:translateY(0); }
+.btn-buy:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-sound { position:absolute; top:8px; right:8px; width:36px; height:36px; border-radius:50%; border:1px solid rgba(0,240,255,0.3); background:rgba(0,240,255,0.08); color:#00f0ff; font-size:1.1rem; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; pointer-events:auto; }
+.btn-sound:active { background:rgba(0,240,255,0.2); }
+#dashboard-wrap, #dashboard-wrap-bmw { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:520px; z-index:15; pointer-events:none; }
+#dashboard-img, #dashboard-img-bmw { width:100%; height:auto; display:block; border-radius:8px 8px 0 0; object-fit:cover; object-position:top; }
+#speedo-canvas, #speedo-canvas-bmw { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+@media (max-height:700px) { #dashboard-wrap, #dashboard-wrap-bmw { max-width:420px; } }
+@media (max-height:600px) { #dashboard-wrap, #dashboard-wrap-bmw { max-width:340px; } }
 
 /* Toast */
 @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+.tutorial-box { width:100%; max-width:420px; background:#12121f; border-radius:24px; padding:24px; border:1px solid rgba(0,240,255,0.15); }
+.tutorial-box h2 { font-size:1.4rem; text-align:center; margin-bottom:18px; background:linear-gradient(135deg,#00f0ff,#ff00aa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.tutorial-item { display:flex; align-items:flex-start; gap:12px; padding:12px; background:rgba(255,255,255,0.03); border-radius:13px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05); }
+.tutorial-icon { font-size:1.6rem; flex-shrink:0; margin-top:2px; }
+.tutorial-text { font-size:0.85rem; color:#c0c0d0; line-height:1.5; }
+.tutorial-text strong { color:#00f0ff; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+@keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
 </style>
 </head>
 <body>
@@ -147,15 +166,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
     <div class="stats-row">
       <span>🏆 Лучший: <span id="stat-best">—</span></span>
       <span>🎮 Сыграно: <span id="stat-games">0</span></span>
-      <span>⭐ КБМ: <span id="stat-kbm">3</span></span>
+      <span>⭐ Класс: <span id="stat-kbm">3</span></span>
     </div>
     <div class="input-group">
       <label>🏙️ Город регистрации</label>
-      <select id="city"><option value="0.8">Москва (0.8)</option><option value="1.0" selected>СПб (1.0)</option><option value="1.2">Екб (1.2)</option><option value="1.5">Другой (1.5)</option></select>
+      <select id="city"><option value="1.8">Москва (1.8)</option><option value="1.7">Казань (1.7)</option><option value="1.64" selected>Санкт-Петербург (1.64)</option><option value="1.4">Ярославль (1.4)</option><option value="1.16">Сочи (1.16)</option><option value="1.0">Прочие города (1.0)</option></select>
     </div>
     <div class="input-group">
       <label>⚡ Мощность (л.с.)</label>
-      <select id="power"><option value="0.6">до 50 (0.6)</option><option value="0.9">51–70 (0.9)</option><option value="1.0" selected>71–100 (1.0)</option><option value="1.2">101–150 (1.2)</option><option value="1.6">200+ (1.6)</option></select>
+      <select id="power"><option value="0.6">до 50 л.с. (0.6)</option><option value="1.0">51–70 л.с. (1.0)</option><option value="1.1" selected>71–100 л.с. (1.1)</option><option value="1.2">101–120 л.с. (1.2)</option><option value="1.4">121–150 л.с. (1.4)</option><option value="1.6">выше 150 л.с. (1.6)</option></select>
     </div>
     <div class="price-box"><span>💰 Полис сейчас:</span><span id="preview-price">—</span></div>
     <button id="btn-start" class="btn-cyber">🚀 Начать заезд</button>
@@ -178,25 +197,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
       <div class="hud-item"><span class="hud-label">Класс</span><span id="hud-class" class="hud-value">3</span></div>
       <div class="hud-item"><span class="hud-label">Заезд</span><span id="hud-lap" class="hud-value">1/10</span></div>
       <div class="hud-item"><span class="hud-label">До финиша</span><span id="hud-dist" class="hud-value">1000м</span></div>
+      <button id="btn-sound" class="btn-sound" onclick="toggleSound()">🔊</button>
     </div>
   </div>
-  <svg id="steering-wheel" viewBox="0 0 200 200">
-    <defs><filter id="wheelShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.6"/></filter></defs>
-    <g id="wheel-group" transform="translate(100,100)">
-      <circle cx="0" cy="0" r="90" fill="none" stroke="#1a1a2e" stroke-width="18" filter="url(#wheelShadow)"/>
-      <circle cx="0" cy="0" r="90" fill="none" stroke="#2a2a3e" stroke-width="14"/>
-      <circle cx="0" cy="0" r="90" fill="none" stroke="#3a3a4e" stroke-width="2" stroke-dasharray="8 6"/>
-      <circle cx="0" cy="0" r="35" fill="#1a1a2e" stroke="#3a3a4e" stroke-width="2"/>
-      <rect x="-6" y="-90" width="12" height="35" rx="4" fill="#ff3333"/>
-      <rect x="-6" y="55" width="12" height="35" rx="4" fill="#00ff88"/>
-      <line x1="0" y1="-55" x2="0" y2="-20" stroke="#555" stroke-width="3"/>
-      <line x1="0" y1="20" x2="0" y2="55" stroke="#555" stroke-width="3"/>
-      <circle cx="0" cy="0" r="8" fill="#00f0ff"/>
-    </g>
-  </svg>
+  <!-- Приборные панели -->
+  <div id="dashboard-wrap" class="dashboard-niva">
+    <img id="dashboard-img" src="dash.png" alt="Приборная панель Лада Нива">
+    <canvas id="speedo-canvas"></canvas>
+  </div>
+  <div id="dashboard-wrap-bmw" class="dashboard-bmw" style="display:none;">
+    <img id="dashboard-img-bmw" src="dash_bmw.png" alt="Приборная панель BMW">
+    <canvas id="speedo-canvas-bmw"></canvas>
+  </div>
   <div id="touch-left" class="touch-zone"></div>
   <div id="touch-right" class="touch-zone"></div>
-  
+
   <!-- Мобильное управление газ/тормоз -->
   <div class="mobile-controls">
     <div id="btn-brake" class="mobile-btn">🛑</div>
@@ -220,16 +235,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
     <h2>🏁 Заезд окончен!</h2>
     <div class="result-card">
       <div class="result-row"><span>Начальная стоимость:</span><span id="res-start">—</span></div>
-      <div class="result-row"><span>Аварий:</span><span id="res-crashes">—</span></div>
+      <div class="result-row"><span>Аварий в заезде:</span><span id="res-crashes">—</span></div>
       <div class="result-row"><span>Итоговый класс:</span><span id="res-class">—</span></div>
       <div class="result-row hl"><span>Итоговый полис:</span><span id="res-price">—</span></div>
+      <div class="result-row hl" style="background:rgba(0,255,136,0.08);"><span>💰 Экономия за сезон:</span><span id="res-economy">—</span></div>
       <div class="result-row"><span>Ранг:</span><span id="res-rank">—</span></div>
     </div>
     <p id="res-msg" class="result-msg"></p>
     <div class="result-card" style="margin-bottom:12px;">
       <div class="result-row"><span>🏆 Лучший результат:</span><span id="res-best">—</span></div>
       <div class="result-row"><span>🎮 Заездов всего:</span><span id="res-total">—</span></div>
-      <div class="result-row"><span>⭐ Текущий КБМ:</span><span id="res-kbm">—</span></div>
+      <div class="result-row"><span>⭐ Текущий класс:</span><span id="res-kbm">—</span></div>
     </div>
     <button id="btn-next" class="btn-cyber">🚀 Следующий заезд</button>
     <button id="btn-menu" class="btn-cyber btn-sec">🏠 В меню</button>
@@ -237,83 +253,72 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
   </div>
 </div>
 
-<!-- Магазин -->
+<!-- Магазин — inline SVG placeholder'ы, никаких внешних файлов -->
 <div id="screen-shop" class="screen">
   <div class="shop-box">
     <h2>🛒 Магазин</h2>
 
     <!-- Бусты -->
-    <div class="shop-item">
+    <div class="shop-item" data-product="shield_30sec">
       <span class="shop-item-icon">🛡️</span>
       <div class="shop-item-info"><div class="shop-item-name">Безаварийный режим</div><div class="shop-item-desc">30 сек неуязвимости в начале заезда</div></div>
-      <span class="shop-item-price">50₽</span>
+      <button class="btn-buy" data-product="shield_30sec">50₽</button>
     </div>
-    <div class="shop-item">
+    <div class="shop-item" data-product="undo_crash">
       <span class="shop-item-icon">🔄</span>
       <div class="shop-item-info"><div class="shop-item-name">Второй шанс</div><div class="shop-item-desc">Отмени последнюю аварию без рекламы</div></div>
-      <span class="shop-item-price">30₽</span>
+      <button class="btn-buy" data-product="undo_crash">30₽</button>
     </div>
 
-    <!-- Премиум-тачки -->
-    <div class="car-card">
+    <!-- Премиум-тачки — SVG placeholder'ы -->
+    <div class="car-card" data-product="car_bmw">
       <h3>🏎️ BMW M3 Competition</h3>
       <div class="car-photos">
-        <img class="car-photo" src="cars/bmw-m3/side.jpg" alt="BMW сбоку" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 1<br>сбоку</div>
-        <img class="car-photo" src="cars/bmw-m3/rear.jpg" alt="BMW сзади" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 2<br>сзади</div>
-        <img class="car-photo" src="cars/bmw-m3/interior.jpg" alt="BMW салон" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 3<br>салон</div>
-        <img class="car-photo" src="cars/bmw-m3/dash.jpg" alt="BMW приборка" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 4<br>приборка</div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="10" y="20" width="60" height="25" rx="4" fill="#3a7bd5"/><rect x="15" y="10" width="50" height="15" rx="3" fill="#2a5fa0"/><circle cx="22" cy="42" r="6" fill="#111"/><circle cx="58" cy="42" r="6" fill="#111"/><rect x="25" y="25" width="30" height="10" fill="#1a3a5a"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="15" y="15" width="50" height="30" rx="4" fill="#3a7bd5"/><rect x="20" y="20" width="40" height="12" fill="#1a3a5a"/><rect x="18" y="38" width="12" height="6" fill="#ff2222"/><rect x="50" y="38" width="12" height="6" fill="#ff2222"/><rect x="30" y="42" width="20" height="5" fill="#fff"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="5" y="5" width="70" height="45" rx="4" fill="#222"/><rect x="15" y="15" width="50" height="20" fill="#333"/><circle cx="25" cy="35" r="4" fill="#888"/><circle cx="55" cy="35" r="4" fill="#888"/><rect x="30" y="40" width="20" height="4" fill="#00f0ff"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="10" y="10" width="60" height="35" rx="3" fill="#1a1a2e"/><rect x="15" y="15" width="50" height="20" fill="#0a0a18"/><rect x="20" y="18" width="15" height="8" fill="#00f0ff"/><rect x="40" y="18" width="15" height="8" fill="#00f0ff"/><rect x="30" y="38" width="20" height="4" fill="#ff3333"/></svg></div>
       </div>
       <div class="car-buy-row">
         <span style="color:#8888a0;font-size:0.75rem;">Спортивная приборка</span>
-        <span class="car-price">30₽</span>
+        <button class="btn-buy" data-product="car_bmw">30₽</button>
       </div>
     </div>
 
-    <div class="car-card">
+    <div class="car-card" data-product="car_haval">
       <h3>🚙 Haval Jolion</h3>
       <div class="car-photos">
-        <img class="car-photo" src="cars/haval-jolion/side.jpg" alt="Haval сбоку" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 1<br>сбоку</div>
-        <img class="car-photo" src="cars/haval-jolion/rear.jpg" alt="Haval сзади" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 2<br>сзади</div>
-        <img class="car-photo" src="cars/haval-jolion/interior.jpg" alt="Haval салон" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 3<br>салон</div>
-        <img class="car-photo" src="cars/haval-jolion/dash.jpg" alt="Haval приборка" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 4<br>приборка</div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="8" y="18" width="64" height="28" rx="5" fill="#c0392b"/><rect x="12" y="8" width="56" height="16" rx="4" fill="#a93226"/><circle cx="22" cy="44" r="7" fill="#111"/><circle cx="58" cy="44" r="7" fill="#111"/><rect x="28" y="24" width="24" height="10" fill="#1a3a5a"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="12" y="12" width="56" height="32" rx="5" fill="#c0392b"/><rect x="18" y="18" width="44" height="14" fill="#1a3a5a"/><rect x="16" y="40" width="14" height="7" fill="#ff2222"/><rect x="50" y="40" width="14" height="7" fill="#ff2222"/><rect x="30" y="45" width="20" height="5" fill="#fff"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="5" y="5" width="70" height="45" rx="4" fill="#2c1a1a"/><rect x="15" y="15" width="50" height="20" fill="#3d2222"/><circle cx="25" cy="35" r="4" fill="#888"/><circle cx="55" cy="35" r="4" fill="#888"/><rect x="30" y="40" width="20" height="4" fill="#ff8800"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="10" y="10" width="60" height="35" rx="3" fill="#1a1a2e"/><rect x="15" y="15" width="50" height="20" fill="#0a0a18"/><rect x="20" y="18" width="15" height="8" fill="#ff8800"/><rect x="40" y="18" width="15" height="8" fill="#ff8800"/><rect x="30" y="38" width="20" height="4" fill="#ff3333"/></svg></div>
       </div>
       <div class="car-buy-row">
         <span style="color:#8888a0;font-size:0.75rem;">Внедорожный стиль</span>
-        <span class="car-price">60₽</span>
+        <button class="btn-buy" data-product="car_haval">60₽</button>
       </div>
     </div>
 
-    <div class="car-card">
+    <div class="car-card" data-product="car_sequoia">
       <h3>🚐 Toyota Sequoia</h3>
       <div class="car-photos">
-        <img class="car-photo" src="cars/toyota-sequoia/side.jpg" alt="Toyota сбоку" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 1<br>сбоку</div>
-        <img class="car-photo" src="cars/toyota-sequoia/rear.jpg" alt="Toyota сзади" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 2<br>сзади</div>
-        <img class="car-photo" src="cars/toyota-sequoia/interior.jpg" alt="Toyota салон" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 3<br>салон</div>
-        <img class="car-photo" src="cars/toyota-sequoia/dash.jpg" alt="Toyota приборка" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="car-photo placeholder" style="display:none">Фото 4<br>приборка</div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="6" y="16" width="68" height="30" rx="4" fill="#7f8c8d"/><rect x="10" y="6" width="60" height="16" rx="3" fill="#616a6b"/><circle cx="20" cy="44" r="8" fill="#111"/><circle cx="60" cy="44" r="8" fill="#111"/><rect x="26" y="22" width="28" height="12" fill="#1a3a5a"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="10" y="10" width="60" height="34" rx="4" fill="#7f8c8d"/><rect x="16" y="16" width="48" height="16" fill="#1a3a5a"/><rect x="14" y="42" width="16" height="8" fill="#ff2222"/><rect x="50" y="42" width="16" height="8" fill="#ff2222"/><rect x="30" y="48" width="20" height="5" fill="#fff"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="5" y="5" width="70" height="45" rx="4" fill="#2a2a2e"/><rect x="15" y="15" width="50" height="20" fill="#3a3a3e"/><circle cx="25" cy="35" r="4" fill="#888"/><circle cx="55" cy="35" r="4" fill="#888"/><rect x="30" y="40" width="20" height="4" fill="#00ff88"/></svg></div>
+        <div class="car-photo"><svg viewBox="0 0 80 55"><rect x="10" y="10" width="60" height="35" rx="3" fill="#1a1a2e"/><rect x="15" y="15" width="50" height="20" fill="#0a0a18"/><rect x="20" y="18" width="15" height="8" fill="#00ff88"/><rect x="40" y="18" width="15" height="8" fill="#00ff88"/><rect x="30" y="38" width="20" height="4" fill="#ff3333"/></svg></div>
       </div>
       <div class="car-buy-row">
         <span style="color:#8888a0;font-size:0.75rem;">Премиум-внедорожник</span>
-        <span class="car-price">100₽</span>
+        <button class="btn-buy" data-product="car_sequoia">100₽</button>
       </div>
     </div>
 
     <!-- VIP -->
-    <div class="vip-banner">
+    <div class="vip-banner" data-product="vip_month">
       <h3>👑 VIP-подписка</h3>
       <p>Все тачки + без рекламы + ежедневный бонус</p>
       <span class="vip-price">150₽ / мес</span>
+      <button class="btn-buy" data-product="vip_month" style="margin-top:10px;width:100%;">Оформить VIP</button>
     </div>
 
     <button id="btn-shop-back" class="btn-cyber btn-sec">🔙 Назад</button>
@@ -326,6 +331,45 @@ html, body { width:100%; height:100%; overflow:hidden; background:#0a0a12; color
     <span class="crash-icon">💥</span>
     <h3 style="color:#ff3333;margin-bottom:6px;">Авария!</h3>
     <p style="color:#8888a0;font-size:0.85rem;">КБМ повышен, полис дороже</p>
+  </div>
+</div>
+
+<!-- Обучение -->
+<div id="screen-tutorial" class="screen">
+  <div class="tutorial-box">
+    <h2>🎓 Как играть</h2>
+    <div class="tutorial-item">
+      <span class="tutorial-icon">⬅️ ➡️</span>
+      <div class="tutorial-text">
+        <strong>Уклоняйся</strong> от встречных машин и знаков дорожных работ
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <span class="tutorial-icon">⬆️ ⬇️</span>
+      <div class="tutorial-text">
+        <strong>Газ</strong> — ускоряйся, <strong>тормоз</strong> — снижай скорость перед опасными участками
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <span class="tutorial-icon">🎯</span>
+      <div class="tutorial-text">
+        <strong>Цель:</strong> доехать до финиша. Чем меньше аварий — тем выше класс и больше скидка на ОСАГО
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <span class="tutorial-icon">📱</span>
+      <div class="tutorial-text">
+        <strong>На телефоне:</strong> нажимай левую/правую половину экрана и кнопки 🛑 🚀 внизу
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <span class="tutorial-icon">⭐</span>
+      <div class="tutorial-text">
+        <strong>10 заездов</strong> = 1 сезон. С каждым безаварийным годом класс растёт, КБМ падает, полис дешевеет
+      </div>
+    </div>
+    <button id="btn-tutorial-start" class="btn-cyber">🚀 Понятно, поехали!</button>
+    <button id="btn-tutorial-skip" class="btn-cyber btn-sec" style="margin-top:8px;font-size:0.85rem;padding:12px;">Пропустить обучение</button>
   </div>
 </div>
 
