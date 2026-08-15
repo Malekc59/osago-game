@@ -307,13 +307,15 @@ var TRACKS=[
     hills:function(n,total){ return Math.sin(n/18)*400; },
     obstacles:10,
     obstacleTypes:['sedan','taxi','truck','roadwork'],
-    sceneryType:'tree', sceneryDensity:2.0, scenerySize:1.0,
+    sceneryType:'tree', sceneryDensity:1.8, scenerySize:1.0,
     horizonType:'forest',
-    skyColors:['#87CEEB','#B0E0E6'],
+    skyTop:'#4FC3F7', skyBottom:'#B3E5FC',
+    sunColor:'#FFEB3B', sunGlow:'rgba(255,235,59,0.3)',
+    grassColor:'#66BB6A', grassDark:'#43A047',
     sceneryPalette:[
-      {color:'#1a6b1a',color2:'#0d4f0d',color3:'#2d8a2d'},
-      {color:'#0d5a0d',color2:'#083d08',color3:'#1a7a1a'},
-      {color:'#228b22',color2:'#145214',color3:'#2e8b2e'}
+      {trunk:'#795548', dark:'#1B5E20', mid:'#2E7D32', light:'#4CAF50', snow:false},
+      {trunk:'#6D4C41', dark:'#2E7D32', mid:'#388E3C', light:'#66BB6A', snow:false},
+      {trunk:'#5D4037', dark:'#1B5E20', mid:'#2E7D32', light:'#43A047', snow:true}
     ]
   },
   {
@@ -323,15 +325,17 @@ var TRACKS=[
     hills:function(n,total){ return Math.sin(n/35)*80; },
     obstacles:15,
     obstacleTypes:['sedan','taxi','police','truck','roadwork'],
-    sceneryType:'building', sceneryDensity:1.4, scenerySize:1.2,
+    sceneryType:'building', sceneryDensity:1.2, scenerySize:1.1,
     horizonType:'city',
-    skyColors:['#4a5568','#718096'],
+    skyTop:'#42A5F5', skyBottom:'#90CAF9',
+    sunColor:'#FFEB3B', sunGlow:'rgba(255,235,59,0.25)',
+    grassColor:'#81C784', grassDark:'#66BB6A',
     sceneryPalette:[
-      {color:'#e53e3e',color2:'#c53030',roof:'#742a2a'},
-      {color:'#3182ce',color2:'#2b6cb0',roof:'#1a365d'},
-      {color:'#d69e2e',color2:'#b7791f',roof:'#744210'},
-      {color:'#805ad5',color2:'#6b46c1',roof:'#44337a'},
-      {color:'#38a169',color2:'#2f855a',roof:'#22543d'}
+      {wall:'#EF5350', side:'#C62828', roof:'#B71C1C', window:'#FFEB3B', darkWindow:'#1A237E'},
+      {wall:'#42A5F5', side:'#1565C0', roof:'#0D47A1', window:'#FFEB3B', darkWindow:'#1A237E'},
+      {wall:'#FFCA28', side:'#F57F17', roof:'#E65100', window:'#FFEB3B', darkWindow:'#1A237E'},
+      {wall:'#AB47BC', side:'#7B1FA2', roof:'#4A148C', window:'#FFEB3B', darkWindow:'#1A237E'},
+      {wall:'#26A69A', side:'#00695C', roof:'#004D40', window:'#FFEB3B', darkWindow:'#1A237E'}
     ]
   },
   {
@@ -341,13 +345,15 @@ var TRACKS=[
     hills:function(n,total){ return Math.sin(n/7)*350; },
     obstacles:20,
     obstacleTypes:['sedan','taxi','truck','roadwork'],
-    sceneryType:'mountain', sceneryDensity:2.5, scenerySize:1.4,
+    sceneryType:'mountain', sceneryDensity:2.2, scenerySize:1.3,
     horizonType:'mountain',
-    skyColors:['#a0aec0','#cbd5e0'],
+    skyTop:'#90CAF9', skyBottom:'#E3F2FD',
+    sunColor:'#FFF176', sunGlow:'rgba(255,241,118,0.35)',
+    grassColor:'#AED581', grassDark:'#7CB342',
     sceneryPalette:[
-      {color:'#4a5568',color2:'#2d3748',color3:'#718096'},
-      {color:'#5a6578',color2:'#3a4558',color3:'#8190a0'},
-      {color:'#6a7585',color2:'#4a5568',color3:'#90a0b0'}
+      {rock:'#78909C', shadow:'#455A64', light:'#B0BEC5', snow:'#ECEFF1', tree:'#33691E'},
+      {rock:'#8D6E63', shadow:'#5D4037', light:'#BCAAA4', snow:'#F5F5F5', tree:'#2E7D32'},
+      {rock:'#607D8B', shadow:'#37474F', light:'#90A4AE', snow:'#FFFFFF', tree:'#1B5E20'}
     ]
   }
 ];
@@ -364,8 +370,8 @@ function createRoad(trackIdx){
       p2:{world:{z:(n+1)*SEGMENT_LENGTH,y:y},camera:{},screen:{}},
       curve:curve, sprites:[],
       color: Math.floor(n/RUMBLE_LENGTH)%2
-        ? {road:'#2a2a35', grass:'#1a3a1a', rumble:'#ff3333', lane:'#555'}
-        : {road:'#2d2d3a', grass:'#1d3d1d', rumble:'#ffffff', lane:'#555'}
+        ? {road:'#37474F', grass:'#4CAF50', rumble:'#FF5252', lane:'#90A4AE'}
+        : {road:'#455A64', grass:'#66BB6A', rumble:'#FFFFFF', lane:'#B0BEC5'}
     });
   }
   function lastY(){ return segments.length===0?0:segments[segments.length-1].p2.world.y; }
@@ -400,26 +406,35 @@ function createRoad(trackIdx){
     var scOffset=side*(1.6+(n%7)*0.12);
     var pal=palette[n%palette.length];
     segments[n].scenery=segments[n].scenery||[];
-    segments[n].scenery.push({
+    var scObj={
       type:track.sceneryType,
       offset:scOffset,
-      color:pal.color,
-      color2:pal.color2,
-      color3:pal.color3,
       heightVar:0.8+(n%5)*0.08,
       sizeMult:(track.scenerySize||1.0)*1.3
-    });
+    };
+    if(track.sceneryType==='tree'){
+      scObj.trunk=pal.trunk; scObj.dark=pal.dark; scObj.mid=pal.mid; scObj.light=pal.light; scObj.snow=pal.snow;
+    }else if(track.sceneryType==='building'){
+      scObj.wall=pal.wall; scObj.side=pal.side; scObj.roof=pal.roof; scObj.window=pal.window; scObj.darkWindow=pal.darkWindow;
+    }else{
+      scObj.rock=pal.rock; scObj.shadow=pal.shadow; scObj.light=pal.light; scObj.snow=pal.snow; scObj.tree=pal.tree;
+    }
+    segments[n].scenery.push(scObj);
     // Пара — два объекта рядом для плотности
     if(n%3===0 && track.sceneryType!=='mountain'){
-      segments[n].scenery.push({
+      var pal2=palette[(n+1)%palette.length];
+      var scObj2={
         type:track.sceneryType,
         offset:scOffset*1.4,
-        color:palette[(n+1)%palette.length].color,
-        color2:palette[(n+1)%palette.length].color2,
-        color3:palette[(n+1)%palette.length].color3,
         heightVar:0.6+(n%4)*0.1,
         sizeMult:(track.scenerySize||1.0)*0.9
-      });
+      };
+      if(track.sceneryType==='tree'){
+        scObj2.trunk=pal2.trunk; scObj2.dark=pal2.dark; scObj2.mid=pal2.mid; scObj2.light=pal2.light; scObj2.snow=pal2.snow;
+      }else if(track.sceneryType==='building'){
+        scObj2.wall=pal2.wall; scObj2.side=pal2.side; scObj2.roof=pal2.roof; scObj2.window=pal2.window; scObj2.darkWindow=pal2.darkWindow;
+      }
+      segments[n].scenery.push(scObj2);
     }
   }
   // Дальний слой scenery (горизонт) для гор и леса
@@ -428,16 +443,20 @@ function createRoad(trackIdx){
     for(n=60;n<segments.length-100;n+=farStep){
       var side=(n%2===0)?-1:1;
       segments[n].farScenery=segments[n].farScenery||[];
-      segments[n].farScenery.push({
-        type:track.sceneryType==='mountain'?'mountain':'tree',
+      var farPal=palette[n%palette.length];
+      var farObj={
+        type:track.sceneryType,
         offset:side*(2.5+(n%3)*0.3),
-        color:track.sceneryType==='mountain'?'#4a5568':'#0d3d0d',
-        color2:track.sceneryType==='mountain'?'#2d3748':'#0a2a0a',
-        color3:track.sceneryType==='mountain'?'#718096':null,
         heightVar:1.2+(n%3)*0.2,
         sizeMult:1.8,
         far:true
-      });
+      };
+      if(track.sceneryType==='tree'){
+        farObj.trunk='#5D4037'; farObj.dark='#1B5E20'; farObj.mid='#2E7D32'; farObj.light='#388E3C'; farObj.snow=false;
+      }else{
+        farObj.rock='#607D8B'; farObj.shadow='#455A64'; farObj.light='#90A4AE'; farObj.snow='#ECEFF1'; farObj.tree='#33691E';
+      }
+      segments[n].farScenery.push(farObj);
     }
   }
   for(n=0;n<segments.length;n++) segments[n].originalSprites=segments[n].sprites.slice();
@@ -458,10 +477,11 @@ function project(p,cameraX,cameraY,cameraZ,cameraDepth,width,height,roadWidth){
 function render(){
   ctx.clearRect(0,0,W,H);
   var track=TRACKS[game.trackIndex||0];
-  var skyColors=track?track.skyColors:['#0a1628','#1a3a5a'];
+  var skyTop=track?track.skyTop:'#0a1628';
+  var skyBottom=track?track.skyBottom:'#1a3a5a';
   var skyGrad=ctx.createLinearGradient(0,0,0,H*0.5);
-  skyGrad.addColorStop(0,skyColors[0]||'#0a1628');
-  skyGrad.addColorStop(1,skyColors[1]||'#1a3a5a');
+  skyGrad.addColorStop(0,skyTop);
+  skyGrad.addColorStop(1,skyBottom);
   ctx.fillStyle=skyGrad; ctx.fillRect(0,0,W,H*0.5);
   renderLandscape();
   if(segments.length===0) return;
@@ -738,225 +758,299 @@ function renderScenery(seg,sc){
   var scale=seg.p1.screen.scale;
   var sx=seg.p1.screen.x+(sc.offset*ROAD_WIDTH*W/2*scale);
   var sy=seg.p1.screen.y;
-  var farMult=sc.far?1.6:1.0;
-  var w=280*scale*sc.sizeMult*farMult, h=360*scale*sc.sizeMult*sc.heightVar*farMult;
+  var farMult=sc.far?1.8:1.0;
+  var w=320*scale*sc.sizeMult*farMult, h=400*scale*sc.sizeMult*sc.heightVar*farMult;
+  var pal=sc;
 
   if(sc.type==='tree'){
-    // === МУЛЬТЯШНАЯ ЕЛЬ ===
-    var trunkW=w*0.14, trunkH=h*0.35;
+    // === МУЛЬТЯШНАЯ ЕЛЬ (как на референсах) ===
+    var tw=w*0.12, th=h*0.32;
     // Ствол
-    ctx.fillStyle='#5D4037';
-    ctx.fillRect(sx-trunkW*0.5,sy-trunkH*0.1,trunkW,trunkH);
-    // Тень от ствола
-    ctx.fillStyle='rgba(0,0,0,0.15)';
-    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.05,w*0.25,h*0.04,0,0,Math.PI*2); ctx.fill();
-    // Ярусы кроны (3 треугольника)
+    ctx.fillStyle=pal.trunk||'#795548';
+    ctx.fillRect(sx-tw*0.5,sy-th*0.05,tw,th);
+    // Тень
+    ctx.fillStyle='rgba(0,0,0,0.12)';
+    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.04,w*0.22,h*0.035,0,0,Math.PI*2); ctx.fill();
+    // 3 яруса кроны с зигзаг-контурами
     var tiers=[
-      {y:sy-h*0.15, w:w*0.9, h:h*0.45, color:sc.color},
-      {y:sy-h*0.45, w:w*0.7, h:h*0.4, color:sc.color2||'#2E7D32'},
-      {y:sy-h*0.72, w:w*0.45, h:h*0.35, color:sc.color3||'#1B5E20'}
+      {y:sy-h*0.12, w:w*0.85, h:h*0.42, c:pal.mid||'#2E7D32'},
+      {y:sy-h*0.42, w:w*0.62, h:h*0.38, c:pal.dark||'#1B5E20'},
+      {y:sy-h*0.70, w:w*0.38, h:h*0.32, c:pal.light||'#4CAF50'}
     ];
-    tiers.forEach(function(t){
-      ctx.fillStyle=t.color;
+    tiers.forEach(function(t,idx){
+      ctx.fillStyle=t.c;
       ctx.beginPath();
       ctx.moveTo(sx,t.y-t.h);
+      // Левая сторона зигзагом
+      ctx.lineTo(sx-t.w*0.35,t.y-t.h*0.35);
       ctx.lineTo(sx-t.w*0.5,t.y);
+      // Правая сторона зигзагом
       ctx.lineTo(sx+t.w*0.5,t.y);
+      ctx.lineTo(sx+t.w*0.35,t.y-t.h*0.35);
       ctx.closePath();
       ctx.fill();
-      // Контур
-      ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1.5*scale;
+      // Тёмный контур
+      ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=1.2*scale;
       ctx.stroke();
     });
-    // Снежная шапка на верхушке (иногда)
-    if(seg.index%5===0){
-      ctx.fillStyle='rgba(255,255,255,0.6)';
+    // Снежная шапка
+    if(pal.snow){
+      ctx.fillStyle='rgba(255,255,255,0.7)';
       ctx.beginPath();
-      ctx.moveTo(sx,sy-h*0.95);
-      ctx.lineTo(sx-w*0.08,sy-h*0.82);
-      ctx.lineTo(sx+w*0.08,sy-h*0.82);
+      ctx.moveTo(sx-w*0.12,sy-h*0.82);
+      ctx.lineTo(sx,sy-h*1.02);
+      ctx.lineTo(sx+w*0.12,sy-h*0.82);
+      ctx.lineTo(sx,sy-h*0.75);
       ctx.fill();
     }
 
   }else if(sc.type==='building'){
-    // === МУЛЬТЯШНЫЙ ДОМ ===
-    var bw=w*0.85, bh=h*0.9;
+    // === МУЛЬТЯШНЫЙ ДОМ (как на референсах) ===
+    var bw=w*0.8, bh=h*0.88;
     // Тень
-    ctx.fillStyle='rgba(0,0,0,0.2)';
-    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.03,bw*0.55,h*0.04,0,0,Math.PI*2); ctx.fill();
-    // Фасад
-    ctx.fillStyle=sc.color;
-    ctx.fillRect(sx-bw*0.5,sy-bh*0.85,bw,bh*0.9);
-    // Боковая грань (3D эффект)
-    ctx.fillStyle=sc.color2||adjustColor(sc.color,-30);
-    ctx.fillRect(sx+bw*0.48,sy-bh*0.85,bw*0.08,bh*0.9);
-    // Треугольная крыша
-    ctx.fillStyle=sc.roof||'#8B4513';
-    ctx.beginPath();
-    ctx.moveTo(sx-bw*0.6,sy-bh*0.85);
-    ctx.lineTo(sx,sy-bh*1.05);
-    ctx.lineTo(sx+bw*0.6,sy-bh*0.85);
-    ctx.closePath();
-    ctx.fill();
-    // Карниз
     ctx.fillStyle='rgba(0,0,0,0.15)';
-    ctx.fillRect(sx-bw*0.55,sy-bh*0.87,bw*1.1,bh*0.03);
-    // Окна (2×3 сетка)
-    var winW=bw*0.12, winH=bh*0.1, gapX=bw*0.18, gapY=bh*0.14;
-    var startX=sx-bw*0.28, startY=sy-bh*0.72;
+    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.02,bw*0.5,h*0.035,0,0,Math.PI*2); ctx.fill();
+    // Фасад — яркий плоский цвет
+    ctx.fillStyle=pal.wall||'#EF5350';
+    ctx.fillRect(sx-bw*0.5,sy-bh*0.82,bw,bh*0.88);
+    // Боковая грань (3D)
+    ctx.fillStyle=pal.side||'#C62828';
+    ctx.fillRect(sx+bw*0.48,sy-bh*0.82,bw*0.06,bh*0.88);
+    // Плоская крыша
+    ctx.fillStyle=pal.roof||'#B71C1C';
+    ctx.fillRect(sx-bw*0.52,sy-bh*0.86,bw*1.06,bh*0.06);
+    // Карниз
+    ctx.fillStyle='rgba(0,0,0,0.12)';
+    ctx.fillRect(sx-bw*0.5,sy-bh*0.84,bw,bh*0.02);
+    // Окна 2×3 — яркие, с рамками
+    var winW=bw*0.1, winH=bh*0.09, gapX=bw*0.16, gapY=bh*0.13;
+    var startX=sx-bw*0.24, startY=sy-bh*0.7;
     for(var row=0;row<3;row++){
       for(var col=0;col<2;col++){
         var wx=startX+col*gapX, wy=startY+row*gapY;
         var lit=((seg.index+row*2+col)%5<2);
-        // Рамка
-        ctx.fillStyle='#fff';
-        ctx.fillRect(wx-1,wy-1,winW+2,winH+2);
+        // Белая рамка
+        ctx.fillStyle='#FFF';
+        ctx.fillRect(wx-1.5,wy-1.5,winW+3,winH+3);
         // Стекло
-        ctx.fillStyle=lit?'#FFEB3B':'#1a237e';
+        ctx.fillStyle=lit?(pal.window||'#FFEB3B'):(pal.darkWindow||'#1A237E');
         ctx.fillRect(wx,wy,winW,winH);
         // Блик
         if(lit){
-          ctx.fillStyle='rgba(255,255,255,0.4)';
-          ctx.fillRect(wx+winW*0.1,wy+winH*0.1,winW*0.3,winH*0.3);
+          ctx.fillStyle='rgba(255,255,255,0.5)';
+          ctx.fillRect(wx+winW*0.08,wy+winH*0.08,winW*0.35,winH*0.3);
         }
       }
     }
     // Дверь
     ctx.fillStyle='#5D4037';
-    ctx.fillRect(sx-bw*0.08,sy-bh*0.22,bw*0.16,bh*0.22);
+    ctx.fillRect(sx-bw*0.07,sy-bh*0.2,bw*0.14,bh*0.2);
     // Ручка
-    ctx.fillStyle='#FFD700';
-    ctx.beginPath(); ctx.arc(sx+bw*0.03,sy-bh*0.12,bw*0.015,0,Math.PI*2); ctx.fill();
-    // Дымоход
-    ctx.fillStyle='#8B4513';
-    ctx.fillRect(sx+bw*0.25,sy-bh*0.98,bw*0.06,bh*0.1);
-    // Дым
-    ctx.fillStyle='rgba(200,200,200,0.4)';
-    var smokeY=sy-bh*(1.0+(seg.index%3)*0.03);
-    ctx.beginPath(); ctx.arc(sx+bw*0.28,smokeY,bw*0.04,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(sx+bw*0.32,smokeY-bh*0.04,bw*0.03,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFD54F';
+    ctx.beginPath(); ctx.arc(sx+bw*0.02,sy-bh*0.1,bw*0.012,0,Math.PI*2); ctx.fill();
+    // Фонарь (как на референсе)
+    ctx.fillStyle='#90A4AE';
+    ctx.fillRect(sx+bw*0.55,sy-bh*0.55,bw*0.04,bh*0.55);
+    ctx.fillStyle='#CFD8DC';
+    ctx.beginPath(); ctx.ellipse(sx+bw*0.57,sy-bh*0.55,bw*0.06,bh*0.04,0,0,Math.PI*2); ctx.fill();
 
   }else if(sc.type==='mountain'){
     // === МУЛЬТЯШНАЯ ГОРА ===
-    // Дальний план — тёмная скала
-    ctx.fillStyle=sc.color2||'#37474F';
+    // Дальняя скала
+    ctx.fillStyle=pal.shadow||'#455A64';
     ctx.beginPath();
-    ctx.moveTo(sx-w*0.9,sy);
-    ctx.lineTo(sx-w*0.3,sy-h*0.55);
-    ctx.lineTo(sx+w*0.1,sy-h*0.4);
-    ctx.lineTo(sx+w*0.7,sy);
+    ctx.moveTo(sx-w*0.85,sy);
+    ctx.lineTo(sx-w*0.25,sy-h*0.5);
+    ctx.lineTo(sx+w*0.15,sy-h*0.35);
+    ctx.lineTo(sx+w*0.65,sy);
     ctx.fill();
-    // Основная гора
-    ctx.fillStyle=sc.color;
+    // Основная скала
+    ctx.fillStyle=pal.rock||'#78909C';
     ctx.beginPath();
-    ctx.moveTo(sx-w*0.75,sy);
-    ctx.lineTo(sx-w*0.1,sy-h);
-    ctx.lineTo(sx+w*0.4,sy-h*0.6);
-    ctx.lineTo(sx+w*0.6,sy);
+    ctx.moveTo(sx-w*0.7,sy);
+    ctx.lineTo(sx-w*0.05,sy-h);
+    ctx.lineTo(sx+w*0.35,sy-h*0.58);
+    ctx.lineTo(sx+w*0.55,sy);
     ctx.fill();
-    // Светлый склон (правый)
-    ctx.fillStyle=sc.color3||'#78909C';
+    // Светлый склон
+    ctx.fillStyle=pal.light||'#B0BEC5';
     ctx.beginPath();
-    ctx.moveTo(sx-w*0.1,sy-h);
-    ctx.lineTo(sx+w*0.15,sy-h*0.78);
-    ctx.lineTo(sx+w*0.4,sy-h*0.6);
-    ctx.lineTo(sx+w*0.05,sy-h*0.5);
+    ctx.moveTo(sx-w*0.05,sy-h);
+    ctx.lineTo(sx+w*0.12,sy-h*0.75);
+    ctx.lineTo(sx+w*0.35,sy-h*0.58);
+    ctx.lineTo(sx+w*0.05,sy-h*0.48);
     ctx.fill();
     // Снежная шапка
-    ctx.fillStyle='#ECEFF1';
+    ctx.fillStyle=pal.snow||'#ECEFF1';
     ctx.beginPath();
-    ctx.moveTo(sx-w*0.25,sy-h*0.68);
-    ctx.lineTo(sx-w*0.1,sy-h);
-    ctx.lineTo(sx+w*0.08,sy-h*0.85);
-    ctx.lineTo(sx+w*0.15,sy-h*0.65);
+    ctx.moveTo(sx-w*0.22,sy-h*0.65);
+    ctx.lineTo(sx-w*0.05,sy-h);
+    ctx.lineTo(sx+w*0.08,sy-h*0.82);
+    ctx.lineTo(sx+w*0.15,sy-h*0.62);
     ctx.fill();
     // Тень
-    ctx.fillStyle='rgba(0,0,0,0.18)';
-    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.02,w*0.5,h*0.04,0,0,Math.PI*2); ctx.fill();
-    // Деревья у подножия
-    ctx.fillStyle='#2E7D32';
-    for(var ti=0;ti<3;ti++){
-      var tx=sx-w*0.5+ti*w*0.35;
-      ctx.beginPath(); ctx.moveTo(tx,sy); ctx.lineTo(tx-w*0.06,sy-h*0.08); ctx.lineTo(tx+w*0.06,sy-h*0.08); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.12)';
+    ctx.beginPath(); ctx.ellipse(sx,sy+h*0.015,w*0.45,h*0.03,0,0,Math.PI*2); ctx.fill();
+    // Ели у подножия
+    ctx.fillStyle=pal.tree||'#33691E';
+    for(var ti=0;ti<4;ti++){
+      var tx=sx-w*0.45+ti*w*0.3;
+      ctx.beginPath(); ctx.moveTo(tx,sy); ctx.lineTo(tx-w*0.05,sy-h*0.1); ctx.lineTo(tx+w*0.05,sy-h*0.1); ctx.fill();
     }
   }
-}
-
-// Вспомогательная функция для затемнения цвета
-function adjustColor(hex,amount){
-  var r=parseInt(hex.slice(1,3),16)+amount;
-  var g=parseInt(hex.slice(3,5),16)+amount;
-  var b=parseInt(hex.slice(5,7),16)+amount;
-  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
-  return '#'+r.toString(16).padStart(2,'0')+g.toString(16).padStart(2,'0')+b.toString(16).padStart(2,'0');
 }
 
 function renderLandscape(){
   var track=TRACKS[game.trackIndex||0];
-  var hy=H*0.45;
-  var horizonType=track?track.horizonType:'forest';
+  var hy=H*0.48;
+  var ht=track?track.horizonType:'forest';
 
-  if(horizonType==='city'){
-    // Мультяшный городской силуэт
-    ctx.fillStyle='#1a1a2e';
-    ctx.fillRect(0,hy-40,W,40);
-    // Небоскрёбы
-    var buildings=[60,90,50,120,70,100,55,80,110,65,95,75];
-    var bx=0;
-    for(var i=0;i<buildings.length;i++){
-      var bw=buildings[i], bh=30+Math.sin(i*1.7)*25+Math.cos(i*2.3)*15;
-      ctx.fillStyle='#2d2d3d';
+  // === СОЛНЦЕ ===
+  var sunX=W*0.75, sunY=H*0.12;
+  ctx.fillStyle=track?track.sunGlow:'rgba(255,235,59,0.3)';
+  ctx.beginPath(); ctx.arc(sunX,sunY,50,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=track?track.sunColor:'#FFEB3B';
+  ctx.beginPath(); ctx.arc(sunX,sunY,28,0,Math.PI*2); ctx.fill();
+  // Лучи
+  ctx.strokeStyle='rgba(255,235,59,0.15)'; ctx.lineWidth=2;
+  for(var r=0;r<8;r++){
+    var ang=r*Math.PI/4;
+    ctx.beginPath(); ctx.moveTo(sunX+Math.cos(ang)*35,sunY+Math.sin(ang)*35);
+    ctx.lineTo(sunX+Math.cos(ang)*55,sunY+Math.sin(ang)*55); ctx.stroke();
+  }
+
+  // === ОБЛАКА ===
+  var cloudOffset=(game.distance*0.003)%W;
+  var clouds=[{x:0.15,y:0.08,w:80,h:25},{x:0.35,y:0.12,w:60,h:20},{x:0.55,y:0.06,w:90,h:30},{x:0.78,y:0.14,w:50,h:18},{x:0.92,y:0.09,w:70,h:22}];
+  clouds.forEach(function(c){
+    var cx=((c.x*W)-cloudOffset+W)%W;
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    ctx.beginPath(); ctx.ellipse(cx,c.y*H,c.w,c.h,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx+c.w*0.4,c.y*H-c.h*0.3,c.w*0.6,c.h*0.7,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx-c.w*0.3,c.y*H+c.h*0.1,c.w*0.5,c.h*0.6,0,0,Math.PI*2); ctx.fill();
+  });
+
+  if(ht==='city'){
+    // === ГОРОДСКОЙ СИЛУЭТ ===
+    // Дальние небоскрёбы (приглушённые)
+    ctx.fillStyle='#90A4AE';
+    var farB=[40,70,55,85,45,60,75,50,65,80,55,70];
+    var bx=-30;
+    for(var i=0;i<farB.length;i++){
+      var bw=farB[i], bh=20+Math.sin(i*1.3)*18+Math.cos(i*2.1)*12;
       ctx.fillRect(bx,hy-bh,bw,bh);
-      // Окна в силуэте
-      ctx.fillStyle='rgba(255,221,85,0.15)';
-      for(var wy=hy-bh+8;wy<hy-5;wy+=12){
-        for(var wx=bx+6;wx<bx+bw-6;wx+=14){
-          if((i+wy+wx)%3===0) ctx.fillRect(wx,wy,6,6);
+      bx+=bw-8; if(bx>W+50) break;
+    }
+    // Ближние здания
+    ctx.fillStyle='#78909C';
+    var nearB=[55,80,45,95,60,70,85,50,75,65,90,55];
+    bx=-20;
+    for(var i=0;i<nearB.length;i++){
+      var bw=nearB[i], bh=35+Math.sin(i*1.7)*28+Math.cos(i*2.3)*15;
+      ctx.fillRect(bx,hy-bh,bw,bh);
+      // Окна
+      ctx.fillStyle='rgba(255,248,225,0.25)';
+      for(var wy=hy-bh+6;wy<hy-4;wy+=10){
+        for(var wx=bx+5;wx<bx+bw-5;wx+=12){
+          if((i*7+wy+wx)%4===0) ctx.fillRect(wx,wy,5,5);
         }
       }
-      bx+=bw-5;
-      if(bx>W) break;
+      ctx.fillStyle='#78909C';
+      bx+=bw-10; if(bx>W+50) break;
     }
-  }else if(horizonType==='mountain'){
-    // Мультяшные горы на горизонте
-    ctx.fillStyle='#2d3748';
+    // Тёмная полоса у основания
+    ctx.fillStyle='#546E7A'; ctx.fillRect(0,hy-3,W,6);
+  }else if(ht==='mountain'){
+    // === ГОРНЫЙ ХРЕБЕТ ===
+    // Дальние горы (светлее)
+    ctx.fillStyle='#B0BEC5';
     ctx.beginPath(); ctx.moveTo(0,hy);
-    for(var i=0;i<=W;i+=30){
-      var mh=35+Math.sin(i*0.015)*40+Math.cos(i*0.008)*25;
+    for(var i=0;i<=W;i+=25){
+      var mh=40+Math.sin(i*0.012)*50+Math.cos(i*0.007)*35;
       ctx.lineTo(i,hy-mh);
     }
     ctx.lineTo(W,hy); ctx.fill();
-    // Снежные шапки
-    ctx.fillStyle='rgba(236,239,241,0.5)';
-    for(var i=0;i<=W;i+=60){
-      var mh=35+Math.sin(i*0.015)*40+Math.cos(i*0.008)*25;
-      if(mh>45){
+    // Средние горы
+    ctx.fillStyle='#90A4AE';
+    ctx.beginPath(); ctx.moveTo(-20,hy);
+    for(var i=-20;i<=W+20;i+=30){
+      var mh=55+Math.sin(i*0.015+1)*60+Math.cos(i*0.009+0.5)*40;
+      ctx.lineTo(i,hy-mh);
+    }
+    ctx.lineTo(W+20,hy); ctx.fill();
+    // Ближние горы (тёмнее)
+    ctx.fillStyle='#78909C';
+    ctx.beginPath(); ctx.moveTo(-30,hy);
+    for(var i=-30;i<=W+30;i+=35){
+      var mh=45+Math.sin(i*0.018+2)*45+Math.cos(i*0.011+1.2)*30;
+      ctx.lineTo(i,hy-mh);
+    }
+    ctx.lineTo(W+30,hy); ctx.fill();
+    // Снежные шапки на ближних
+    ctx.fillStyle='#ECEFF1';
+    for(var i=-30;i<=W+30;i+=70){
+      var mh=45+Math.sin(i*0.018+2)*45+Math.cos(i*0.011+1.2)*30;
+      if(mh>55){
         ctx.beginPath();
-        ctx.moveTo(i-15,hy-mh+12);
+        ctx.moveTo(i-20,hy-mh+18);
         ctx.lineTo(i,hy-mh);
-        ctx.lineTo(i+15,hy-mh+12);
+        ctx.lineTo(i+20,hy-mh+18);
         ctx.fill();
       }
     }
   }else{
-    // Лесной горизонт — густая линия деревьев
-    ctx.fillStyle='#0d3d0d';
-    ctx.fillRect(0,hy-20,W,20);
-    for(var i=-20;i<W+20;i+=35){
-      var th=20+Math.sin(i*0.12)*12;
-      ctx.fillStyle='#1a5a1a';
-      ctx.beginPath(); ctx.moveTo(i,hy); ctx.lineTo(i+17,hy-th); ctx.lineTo(i+35,hy); ctx.fill();
-      ctx.fillStyle='#0d4f0d';
-      ctx.beginPath(); ctx.moveTo(i+8,hy); ctx.lineTo(i+17,hy-th*0.7); ctx.lineTo(i+27,hy); ctx.fill();
+    // === ЛЕСНЫЕ ХОЛМЫ ===
+    // Дальние холмы
+    ctx.fillStyle='#81C784';
+    ctx.beginPath(); ctx.moveTo(0,hy);
+    for(var i=0;i<=W;i+=20){
+      var hh=15+Math.sin(i*0.02)*12+Math.cos(i*0.013)*8;
+      ctx.lineTo(i,hy-hh);
+    }
+    ctx.lineTo(W,hy); ctx.fill();
+    // Средние холмы
+    ctx.fillStyle='#66BB6A';
+    ctx.beginPath(); ctx.moveTo(-10,hy);
+    for(var i=-10;i<=W+10;i+=25){
+      var hh=22+Math.sin(i*0.025+1)*15+Math.cos(i*0.018+0.7)*10;
+      ctx.lineTo(i,hy-hh);
+    }
+    ctx.lineTo(W+10,hy); ctx.fill();
+    // Лес на холмах (силуэт)
+    ctx.fillStyle='#2E7D32';
+    for(var i=-30;i<W+30;i+=45){
+      var th=18+Math.sin(i*0.08)*8;
+      ctx.beginPath(); ctx.moveTo(i,hy); ctx.lineTo(i+22,hy-th); ctx.lineTo(i+45,hy); ctx.fill();
+      ctx.fillStyle='#1B5E20';
+      ctx.beginPath(); ctx.moveTo(i+10,hy); ctx.lineTo(i+22,hy-th*0.7); ctx.lineTo(i+35,hy); ctx.fill();
+      ctx.fillStyle='#2E7D32';
     }
   }
-  // Облака (для всех треков)
-  var cloudY=hy-80+(game.trackIndex||0)*15;
-  ctx.fillStyle='rgba(255,255,255,0.08)';
-  for(var c=0;c<5;c++){
-    var cx=((game.distance*0.02+c*200)%W);
-    ctx.beginPath(); ctx.arc(cx,cloudY+c*8,30+c*5,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+25,cloudY+c*8+5,20+c*3,0,Math.PI*2); ctx.fill();
+
+  // === ПЕРЕДНИЙ ПЛАН: кусты и цветы у обочины ===
+  var bushOffset=(game.distance*0.5)%60;
+  for(var side=-1;side<=1;side+=2){
+    for(var i=-60;i<W+60;i+=60){
+      var bx=i-bushOffset;
+      var by=hy+5;
+      // Куст
+      ctx.fillStyle=track?track.grassDark:'#43A047';
+      ctx.beginPath(); ctx.ellipse(bx+side*30,by,18,10,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=track?track.grassColor:'#66BB6A';
+      ctx.beginPath(); ctx.ellipse(bx+side*28,by-3,14,8,0,0,Math.PI*2); ctx.fill();
+      // Цветы
+      if((i+side*100)%180===0){
+        ctx.fillStyle='#FFEB3B';
+        ctx.beginPath(); ctx.arc(bx+side*32,by-5,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#FFF';
+        ctx.beginPath(); ctx.arc(bx+side*32,by-5,2,0,Math.PI*2); ctx.fill();
+      }else if((i+side*100)%180===90){
+        ctx.fillStyle='#E91E63';
+        ctx.beginPath(); ctx.arc(bx+side*32,by-5,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#FFF';
+        ctx.beginPath(); ctx.arc(bx+side*32,by-5,2,0,Math.PI*2); ctx.fill();
+      }
+    }
   }
 }
 
